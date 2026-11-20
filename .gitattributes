@@ -1,0 +1,5 @@
+# Fins de ligne LF dans le dépôt (Prettier et CI Linux).
+* text=auto eol=lf
+# Fichiers CSV conservés octet pour octet (BOM, CRLF, Windows-1252).
+*.csv -text
+*.png binary

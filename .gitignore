@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+playwright-report/
+test-results/
+lighthouse/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+.claude/
