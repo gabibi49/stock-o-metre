@@ -25,13 +25,13 @@ npm run preview
 
 ## Tester
 
-| Commande | Rôle |
-|---|---|
-| `npm run lint` | ESLint (avec interdiction de `innerHTML`, `eval`…) et Prettier |
-| `npm run check` | vérification des types (TypeScript strict, `astro check`) |
-| `npm test` | tests unitaires Vitest (formules, agrégation, lecture CSV, jeu fictif) |
+| Commande                                | Rôle                                                                                     |
+| --------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run lint`                          | ESLint (avec interdiction de `innerHTML`, `eval`…) et Prettier                           |
+| `npm run check`                         | vérification des types (TypeScript strict, `astro check`)                                |
+| `npm test`                              | tests unitaires Vitest (formules, agrégation, lecture CSV, jeu fictif)                   |
 | `npm run build` puis `npm run test:e2e` | tests Playwright sur le site construit, dont « aucune requête réseau pendant l'analyse » |
-| `npm run verify` | enchaîne toutes les commandes ci-dessus |
+| `npm run verify`                        | enchaîne toutes les commandes ci-dessus                                                  |
 
 Avant le premier `test:e2e`, installer le navigateur : `npx playwright install chromium`. Astro 7 refuse deux serveurs `preview` en même temps : arrêtez tout `npm run preview` en cours avant de lancer les tests.
 
