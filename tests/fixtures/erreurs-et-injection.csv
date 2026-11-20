@@ -1,0 +1,7 @@
+date;article;libellé;quantité;type_mouvement;prix_unitaire
+06/01/2025;"=HYPERLINK(""http://exemple.invalid"")";Article piégé <img src=x onerror=alert(1)>;10;Sortie;1,5
+07/01/2025;"=HYPERLINK(""http://exemple.invalid"")";Article piégé <img src=x onerror=alert(1)>;12;Sortie;1,5
+31/02/2025;B-01;Date impossible;5;Sortie;2
+08/01/2025;B-01;Quantité illisible;douze;Sortie;2
+13/01/2025;B-01;Normal;7;Sortie;2
+14/01/2025;B-01;Normal;3;Entrée;2

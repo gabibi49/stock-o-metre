@@ -1,0 +1,104 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { dict, fmt } from '../../i18n';
+import {
+  absoluteUrl,
+  asset,
+  GUIDE_CALC,
+  pathTo,
+  type GuideKey,
+  type Lang,
+} from '../../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  guideKey: GuideKey;
+}
+const { lang, guideKey } = Astro.props;
+const d = dict(lang);
+const m = d.meta[guideKey];
+const entries = await getCollection(
+  'guides',
+  (e) => e.data.lang === lang && e.data.key === guideKey,
+);
+const entry = entries[0];
+if (!entry) throw new Error(`Guide manquant : ${guideKey} (${lang})`);
+const { Content } = await render(entry);
+const words = (entry.body ?? '').split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 220));
+const calcKey = GUIDE_CALC[guideKey];
+const url = absoluteUrl(pathTo(guideKey, lang));
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: m.heading,
+    description: m.description,
+    inLanguage: lang,
+    datePublished: entry.data.published,
+    dateModified: entry.data.updated,
+    mainEntityOfPage: url,
+    url,
+    image: absoluteUrl(asset(`og/${lang}/${guideKey}.png`)),
+    wordCount: words,
+    author: {
+      '@type': 'Organization',
+      name: d.common.siteName,
+      url: absoluteUrl(pathTo('home', lang)),
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: d.common.siteName,
+      url: absoluteUrl(pathTo('home', lang)),
+    },
+  },
+];
+const updated = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+}).format(new Date(entry.data.updated));
+---
+
+<Base
+  lang={lang}
+  routeKey={guideKey}
+  title={m.title}
+  description={m.description}
+  ogType="article"
+  jsonLd={jsonLd}
+  crumbs={[
+    { label: d.common.nav.guides, href: pathTo('guides', lang) },
+    { label: m.heading, href: pathTo(guideKey, lang) },
+  ]}
+>
+  <article class="container container-narrow">
+    <header class="page-head">
+      <h1>{m.heading}</h1>
+      <p class="meta-line">
+        {d.common.updated} <time datetime={entry.data.updated}>{updated}</time> ·{' '}
+        {fmt(d.common.readingTime, { min: minutes })}
+      </p>
+    </header>
+    <aside class="summary-box" aria-labelledby="summary-title">
+      <h2 id="summary-title">{d.guides.summary}</h2>
+      <ul>
+        {entry.data.summary.map((s) => (
+          <li>{s}</li>
+        ))}
+      </ul>
+    </aside>
+    <div class="content">
+      <Content />
+    </div>
+    <div class="cta">
+      <p>
+        <strong>{d.common.relatedCalc}</strong>
+        <a href={pathTo(calcKey, lang)}>{d.meta[calcKey].heading}</a>
+      </p>
+      <a class="btn" href={pathTo('home', lang)}>
+        {d.common.toTool}
+      </a>
+    </div>
+  </article>
+</Base>

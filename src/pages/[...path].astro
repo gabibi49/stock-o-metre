@@ -1,0 +1,47 @@
+---
+/**
+ * Route unique : génère toutes les pages FR et EN à partir de la table
+ * ROUTES (src/i18n/routes.ts). Chaque clé est rendue par son composant.
+ */
+import {
+  LANGS,
+  ROUTE_KEYS,
+  ROUTES,
+  CALC_KEYS,
+  GUIDE_KEYS,
+  type Lang,
+  type RouteKey,
+} from '../i18n/routes';
+import ToolPage from '../components/pages/ToolPage.astro';
+import GuidesIndex from '../components/pages/GuidesIndex.astro';
+import GuidePage from '../components/pages/GuidePage.astro';
+import CalculatorsIndex from '../components/pages/CalculatorsIndex.astro';
+import CalculatorPage from '../components/pages/CalculatorPage.astro';
+import ContentPage from '../components/pages/ContentPage.astro';
+
+export function getStaticPaths() {
+  return ROUTE_KEYS.flatMap((key) =>
+    LANGS.map((lang) => ({
+      params: { path: ROUTES[key][lang].replace(/^\/|\/$/g, '') },
+      props: { key, lang },
+    })),
+  );
+}
+
+interface Props {
+  key: RouteKey;
+  lang: Lang;
+}
+const { key, lang } = Astro.props;
+const isGuide = (GUIDE_KEYS as readonly string[]).includes(key);
+const isCalc = (CALC_KEYS as readonly string[]).includes(key);
+---
+
+{key === 'home' && <ToolPage lang={lang} />}
+{key === 'guides' && <GuidesIndex lang={lang} />}
+{isGuide && <GuidePage lang={lang} guideKey={key as (typeof GUIDE_KEYS)[number]} />}
+{key === 'calculators' && <CalculatorsIndex lang={lang} />}
+{isCalc && <CalculatorPage lang={lang} calcKey={key as (typeof CALC_KEYS)[number]} />}
+{(key === 'methodology' || key === 'privacy' || key === 'legal') && (
+  <ContentPage lang={lang} pageKey={key} />
+)}

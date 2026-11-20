@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import { dict } from '../../i18n';
+import { CALC_GUIDE, CALC_KEYS, pathTo, type Lang } from '../../i18n/routes';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = dict(lang);
+const m = d.meta.calculators;
+---
+
+<Base
+  lang={lang}
+  routeKey="calculators"
+  title={m.title}
+  description={m.description}
+  crumbs={[{ label: d.common.nav.calculators, href: pathTo('calculators', lang) }]}
+>
+  <div class="container">
+    <header class="page-head">
+      <h1>{m.heading}</h1>
+      <p class="lead">{d.calc.intro}</p>
+    </header>
+    <ul class="card-grid">
+      {CALC_KEYS.map((k) => (
+        <li>
+          <article class="card">
+            <h2>
+              <a href={pathTo(k, lang)}>{d.meta[k].heading}</a>
+            </h2>
+            <p>{d.calc.cards[k]}</p>
+            <p>
+              {d.common.relatedGuide}{' '}
+              <a href={pathTo(CALC_GUIDE[k], lang)}>{d.meta[CALC_GUIDE[k]].heading}</a>
+            </p>
+          </article>
+        </li>
+      ))}
+    </ul>
+    <div class="cta">
+      <p>{d.tool.promise}</p>
+      <a class="btn" href={pathTo('home', lang)}>
+        {d.common.toTool}
+      </a>
+    </div>
+  </div>
+</Base>

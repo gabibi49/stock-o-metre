@@ -1,0 +1,82 @@
+# Vérifie le projet à chaque push et pull request, puis déploie sur GitHub Pages
+# à chaque push sur main. Prérequis : Settings → Pages → Source = « GitHub Actions ».
+name: Vérifier et déployer
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, types, tests, audit, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances (versions figées par package-lock.json)
+        run: npm ci
+
+      - name: Audit de sécurité (échec si vulnérabilité haute ou critique)
+        run: npm audit --audit-level=high
+
+      - name: Lint (ESLint + Prettier)
+        run: npm run lint
+
+      - name: Vérification des types (astro check)
+        run: npm run check
+
+      - name: Tests unitaires (Vitest)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Installer Chromium pour Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests de bout en bout (Playwright, dont « aucune requête réseau »)
+        run: npm run test:e2e
+
+      - name: Rapport Playwright en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Préparer l'artefact GitHub Pages
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Déployer sur GitHub Pages
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

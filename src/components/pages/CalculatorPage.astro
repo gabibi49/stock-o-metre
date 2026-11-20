@@ -1,0 +1,143 @@
+---
+import Base from '../../layouts/Base.astro';
+import { dict, LOCALES } from '../../i18n';
+import { CALC_GUIDE, pathTo, type CalcKey, type Lang } from '../../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  calcKey: CalcKey;
+}
+const { lang, calcKey } = Astro.props;
+const d = dict(lang);
+const m = d.meta[calcKey];
+const c = d.calc;
+const guideKey = CALC_GUIDE[calcKey];
+
+type FieldDef = { name: string; label: string; value: string; min?: string; max?: string };
+const F = c.fields;
+const fields: Record<CalcKey, FieldDef[]> = {
+  calcSafety: [
+    { name: 'mu', label: F.mu, value: '100' },
+    { name: 'sigma', label: F.sigma, value: '30' },
+    { name: 'lead', label: F.lead, value: '14' },
+    { name: 'review', label: F.review, value: '7' },
+    { name: 'leadSd', label: F.leadSd, value: '0' },
+    { name: 'service', label: F.service, value: '95', min: '50', max: '99.99' },
+  ],
+  calcRop: [
+    { name: 'daily', label: F.daily, value: '12' },
+    { name: 'lead', label: F.lead, value: '10' },
+    { name: 'ss', label: F.ss, value: '40' },
+  ],
+  calcTarget: [
+    { name: 'daily', label: F.daily, value: '12' },
+    { name: 'lead', label: F.lead, value: '10' },
+    { name: 'review', label: F.review, value: '7' },
+    { name: 'ss', label: F.ss, value: '40' },
+  ],
+  calcCoverage: [
+    { name: 'stock', label: F.stock, value: '450' },
+    { name: 'daily', label: F.daily, value: '12' },
+  ],
+};
+const config = JSON.stringify({
+  key: calcKey,
+  lang,
+  locale: LOCALES[lang],
+  calc: c,
+  symbols: d.symbols,
+  conv: d.tool.explain.conv,
+  z: d.calc.zLine,
+}).replace(/</g, '\\u003c');
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: m.heading,
+    description: m.description,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Any (web browser)',
+    inLanguage: lang,
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  },
+];
+---
+
+<Base
+  lang={lang}
+  routeKey={calcKey}
+  title={m.title}
+  description={m.description}
+  jsonLd={jsonLd}
+  crumbs={[
+    { label: d.common.nav.calculators, href: pathTo('calculators', lang) },
+    { label: m.heading, href: pathTo(calcKey, lang) },
+  ]}
+>
+  <div class="container">
+    <header class="page-head">
+      <h1>{m.heading}</h1>
+      <p class="lead">{c.intro}</p>
+    </header>
+    <div class="calc-layout">
+      <form class="card" id="calc-form" novalidate>
+        {calcKey === 'calcSafety' && (
+          <div class="field">
+            <label for="f-period">{F.period}</label>
+            <select id="f-period" name="period">
+              <option value="day">{c.periods.day}</option>
+              <option value="week" selected>
+                {c.periods.week}
+              </option>
+              <option value="month">{c.periods.month}</option>
+            </select>
+          </div>
+        )}
+        {fields[calcKey].map((f) => (
+          <div class="field">
+            <label for={`f-${f.name}`}>{f.label}</label>
+            <input
+              type="number"
+              id={`f-${f.name}`}
+              name={f.name}
+              value={f.value}
+              min={f.min ?? '0'}
+              max={f.max}
+              step="any"
+              inputmode="decimal"
+              required
+            />
+          </div>
+        ))}
+        <p class="field-hint">{c.help[calcKey]}</p>
+      </form>
+      <section class="card calc-result" aria-labelledby="result-title">
+        <h2 id="result-title">
+          {c.result} {c.labels[calcKey]}
+        </h2>
+        <div id="calc-output" aria-live="polite">
+          <p class="calc-value" id="calc-value"></p>
+          <p class="field-hint" id="calc-note"></p>
+          <h3>{c.formula}</h3>
+          <p class="calc-formula" id="calc-formula"></p>
+        </div>
+        <p class="error-text" id="calc-error" role="alert"></p>
+      </section>
+    </div>
+    <div class="cta">
+      <p>
+        {d.common.relatedGuide}
+        <a href={pathTo(guideKey, lang)}>{d.meta[guideKey].heading}</a>
+      </p>
+      <a class="btn" href={pathTo('home', lang)}>
+        {d.common.toTool}
+      </a>
+    </div>
+  </div>
+  <script type="application/json" id="calc-config" is:inline set:html={config} />
+</Base>
+
+<script>
+  import '../../calculators/main';
+</script>

@@ -1,0 +1,42 @@
+---
+/** Page 404 bilingue (servie par GitHub Pages pour toute adresse inconnue du site). */
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import { DICTS } from '../i18n';
+import { pathTo } from '../i18n/routes';
+
+const fr = DICTS.fr;
+const en = DICTS.en;
+---
+
+<Base
+  lang="fr"
+  title={`${fr.notFound.title} / ${en.notFound.title} | ${fr.common.siteName}`}
+  description={fr.notFound.text}
+  noindex
+  showChrome={false}
+>
+  <div class="container container-narrow">
+    <p class="brand">
+      <Logo /> <span>{fr.common.siteName}</span>
+    </p>
+    <div class="card">
+      <h1>{fr.notFound.title}</h1>
+      <p>{fr.notFound.text}</p>
+      <p>
+        <a class="btn" href={pathTo('home', 'fr')}>
+          {fr.notFound.back}
+        </a>
+      </p>
+    </div>
+    <div class="card" lang="en">
+      <h2>{en.notFound.title}</h2>
+      <p>{en.notFound.text}</p>
+      <p>
+        <a class="btn btn-secondary" href={pathTo('home', 'en')}>
+          {en.notFound.back}
+        </a>
+      </p>
+    </div>
+  </div>
+</Base>

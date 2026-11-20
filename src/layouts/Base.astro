@@ -1,0 +1,140 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import JsonLd from '../components/JsonLd.astro';
+import { CONTENT_SECURITY_POLICY, GOOGLE_SITE_VERIFICATION, REFERRER_POLICY } from '../config';
+import { dict } from '../i18n';
+import { absoluteUrl, asset, BASE, pathTo, type Lang, type RouteKey } from '../i18n/routes';
+
+export interface Crumb {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  lang: Lang;
+  /** Clé de la page (pour hreflang et le sélecteur de langue). Absente : page hors table (404, racine). */
+  routeKey?: RouteKey;
+  title: string;
+  description: string;
+  /** Fil d'Ariane, sans l'accueil (ajouté automatiquement). Vide : pas de fil visible. */
+  crumbs?: Crumb[];
+  jsonLd?: Record<string, unknown>[];
+  /** Image Open Graph (chemin dans /og/). */
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  /** Remplace les liens hreflang (page racine). */
+  alternates?: { hreflang: string; href: string }[];
+  canonical?: string;
+  bodyClass?: string;
+  showChrome?: boolean;
+}
+
+const {
+  lang,
+  routeKey,
+  title,
+  description,
+  crumbs,
+  jsonLd = [],
+  ogImage,
+  ogType = 'website',
+  noindex = false,
+  alternates,
+  canonical,
+  bodyClass,
+  showChrome = true,
+} = Astro.props;
+const t = dict(lang);
+
+const canonicalUrl = canonical ?? (routeKey ? absoluteUrl(pathTo(routeKey, lang)) : undefined);
+const links =
+  alternates ??
+  (routeKey
+    ? [
+        { hreflang: 'fr', href: absoluteUrl(pathTo(routeKey, 'fr')) },
+        { hreflang: 'en', href: absoluteUrl(pathTo(routeKey, 'en')) },
+        { hreflang: 'x-default', href: absoluteUrl(`${BASE}/`) },
+      ]
+    : []);
+const og = absoluteUrl(asset(ogImage ?? `og/${lang}/${routeKey ?? 'home'}.png`));
+
+const homeCrumb = { label: t.common.breadcrumb.home, href: pathTo('home', lang) };
+const fullCrumbs = crumbs && crumbs.length > 0 ? [homeCrumb, ...crumbs] : [];
+const breadcrumbLd =
+  fullCrumbs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: fullCrumbs.map((c, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: c.label,
+          item: absoluteUrl(c.href),
+        })),
+      }
+    : routeKey
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: t.common.breadcrumb.home,
+              item: absoluteUrl(homeCrumb.href),
+            },
+          ],
+        }
+      : null;
+const allLd = [...jsonLd, ...(breadcrumbLd ? [breadcrumbLd] : [])];
+const isProd = import.meta.env.PROD;
+---
+
+<!doctype html>
+<html lang={lang} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    {isProd && <meta http-equiv="Content-Security-Policy" content={CONTENT_SECURITY_POLICY} />}
+    <meta name="referrer" content={REFERRER_POLICY} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {links.map((l) => (
+      <link rel="alternate" hreflang={l.hreflang} href={l.href} />
+    ))}
+    {GOOGLE_SITE_VERIFICATION && (
+      <meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />
+    )}
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#0b5f8f" />
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <meta property="og:site_name" content={t.common.siteName} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {allLd.length > 0 && <JsonLd data={allLd} />}
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">
+      {t.common.skip}
+    </a>
+    {showChrome && <Header lang={lang} routeKey={routeKey} />}
+    <main id="main" tabindex="-1">
+      {fullCrumbs.length > 0 && <Breadcrumb lang={lang} crumbs={fullCrumbs} />}
+      <slot />
+    </main>
+    {showChrome && <Footer lang={lang} />}
+  </body>
+</html>

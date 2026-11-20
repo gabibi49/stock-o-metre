@@ -1,0 +1,75 @@
+---
+/**
+ * Page racine (x-default) : choix de la langue, sans redirection automatique
+ * (pas de script, pas de détection) pour rester indexable et accessible.
+ */
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import { DICTS } from '../i18n';
+import { absoluteUrl, BASE, pathTo } from '../i18n/routes';
+
+const fr = DICTS.fr;
+const en = DICTS.en;
+const rootUrl = absoluteUrl(`${BASE}/`);
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: fr.common.siteName,
+    url: rootUrl,
+    inLanguage: ['fr', 'en'],
+    description: fr.rootPage.description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: fr.common.siteName, item: rootUrl },
+    ],
+  },
+];
+---
+
+<Base
+  lang="fr"
+  title={fr.rootPage.title}
+  description={fr.rootPage.description}
+  canonical={absoluteUrl(`${BASE}/`)}
+  alternates={[
+    { hreflang: 'fr', href: absoluteUrl(pathTo('home', 'fr')) },
+    { hreflang: 'en', href: absoluteUrl(pathTo('home', 'en')) },
+    { hreflang: 'x-default', href: absoluteUrl(`${BASE}/`) },
+  ]}
+  ogImage="og/fr/home.png"
+  jsonLd={jsonLd}
+  showChrome={false}
+>
+  <div class="container container-narrow">
+    <header class="page-head">
+      <p class="brand">
+        <Logo /> <span>{fr.common.siteName}</span>
+      </p>
+      <h1>{fr.meta.home.heading}</h1>
+      <p class="lead">{fr.common.tagline}</p>
+      <p class="lead" lang="en">
+        {en.common.tagline}
+      </p>
+    </header>
+    <h2 class="visually-hidden">
+      {fr.rootPage.choose} / <span lang="en">{en.rootPage.choose}</span>
+    </h2>
+    <div class="lang-choice">
+      <a class="btn" href={pathTo('home', 'fr')} hreflang="fr">
+        Français
+      </a>
+      <a class="btn btn-secondary" href={pathTo('home', 'en')} hreflang="en" lang="en">
+        English
+      </a>
+    </div>
+    <p class="privacy-badge">
+      <span>
+        {fr.tool.privacyTitle}. <span lang="en">{en.tool.privacyTitle}.</span>
+      </span>
+    </p>
+  </div>
+</Base>

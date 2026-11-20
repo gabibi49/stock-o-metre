@@ -1,0 +1,484 @@
+---
+import Base from '../../layouts/Base.astro';
+import { dict, fmt, LOCALES } from '../../i18n';
+import { absoluteUrl, asset, pathTo, type Lang } from '../../i18n/routes';
+import type { ToolConfig } from '../../tool/context';
+import { PUBLISHED } from '../../config';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = dict(lang);
+const t = d.tool;
+const m = d.meta.home;
+const homeUrl = absoluteUrl(pathTo('home', lang));
+const watermark = homeUrl.replace(/^https?:\/\//, '').replace(/\/(fr|en)\/$/, '');
+
+const config: ToolConfig = {
+  lang,
+  locale: LOCALES[lang],
+  t,
+  symbols: d.symbols,
+  exampleUrl: asset('exemple-mouvements.csv'),
+  homeUrl,
+  watermark,
+  methodologyUrl: pathTo('methodology', lang),
+};
+const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: d.common.siteName,
+    url: homeUrl,
+    description: m.description,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Any (web browser)',
+    inLanguage: lang,
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+    datePublished: PUBLISHED,
+    browserRequirements: 'JavaScript',
+  },
+];
+const templateHref = asset(t.upload.templateFile);
+const shareText = encodeURIComponent(t.share.emailSubject);
+const shareBody = encodeURIComponent(fmt(t.share.emailBody, { url: homeUrl }));
+const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(homeUrl)}`;
+const mailto = `mailto:?subject=${shareText}&body=${shareBody}`;
+const chartIds = [
+  { id: 'chart-stock', wide: true, title: '' },
+  { id: 'chart-cons', wide: true, title: '' },
+  { id: 'chart-pareto', wide: true, title: t.charts.paretoTitle },
+  { id: 'chart-class', wide: false, title: t.charts.classTitle },
+  { id: 'chart-top', wide: false, title: '' },
+];
+---
+
+<Base lang={lang} routeKey="home" title={m.title} description={m.description} jsonLd={jsonLd}>
+  <div class="container">
+    <section class="tool-hero">
+      <h1>{m.heading}</h1>
+      <p class="lead">{t.promise}</p>
+      <div class="privacy-badge" id="privacy">
+        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"
+            fill="#d8efe0"
+            stroke="#1a6b37"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          ></path>
+          <path
+            d="m8.5 12 2.5 2.5 4.5-5"
+            fill="none"
+            stroke="#1a6b37"
+            stroke-width="2"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+        <div>
+          <strong>{t.privacyTitle}</strong>
+          <p>{t.privacyText}</p>
+        </div>
+      </div>
+    </section>
+
+    <nav class="steps-nav" aria-label={t.steps.label}>
+      <ol>
+        <li data-step="upload" aria-current="step">
+          {t.steps.upload}
+        </li>
+        <li data-step="mapping">{t.steps.mapping}</li>
+        <li data-step="params">{t.steps.params}</li>
+        <li data-step="results">{t.steps.results}</li>
+      </ol>
+    </nav>
+
+    <noscript>
+      <p class="notice notice-warn">{t.noscript}</p>
+    </noscript>
+
+    <!-- Étape 1 : fichier -->
+    <section id="step-upload" class="card tool-section" aria-labelledby="upload-title">
+      <h2 id="upload-title">{t.upload.title}</h2>
+      <div class="dropzone" id="dropzone">
+        <p class="dropzone-title">{t.upload.drop}</p>
+        <p>{t.upload.or}</p>
+        <input
+          type="file"
+          id="file-input"
+          class="file-input"
+          accept=".csv,.txt,text/csv,text/plain"
+        />
+        <label for="file-input" class="btn">
+          {t.upload.choose}
+        </label>
+        <p class="field-hint">{t.upload.formats}</p>
+      </div>
+      <div class="upload-links">
+        <a href={templateHref} download={t.upload.templateFile}>
+          {t.upload.template}
+        </a>
+        <button type="button" class="link-button" id="example-btn">
+          {t.upload.example}
+        </button>
+      </div>
+      <div class="progress-wrap" id="upload-progress" hidden>
+        <label for="upload-progress-bar" id="upload-progress-label">
+          {t.upload.reading}
+        </label>
+        <progress id="upload-progress-bar" max="100" value="0"></progress>
+      </div>
+      <div id="upload-status" role="status" aria-live="polite"></div>
+      <div id="upload-error" role="alert"></div>
+      <div id="file-summary" hidden>
+        <p id="file-summary-text" class="meta-line"></p>
+        <h3>{t.upload.previewTitle}</h3>
+        <div class="table-wrap" id="preview"></div>
+      </div>
+    </section>
+
+    <!-- Étape 2 : colonnes -->
+    <section id="step-mapping" class="card tool-section" aria-labelledby="mapping-title" hidden>
+      <h2 id="mapping-title" tabindex="-1">
+        {t.mapping.title}
+      </h2>
+      <p>{t.mapping.intro}</p>
+      <p class="notice" id="mapping-note"></p>
+      <div class="mapping-grid" id="mapping-fields"></div>
+      <div class="grid-fields">
+        <div class="field">
+          <label for="date-order">{t.mapping.dateFormat}</label>
+          <select id="date-order">
+            <option value="dmy">{t.mapping.dateOrders.dmy}</option>
+            <option value="mdy">{t.mapping.dateOrders.mdy}</option>
+            <option value="ymd">{t.mapping.dateOrders.ymd}</option>
+          </select>
+          <p class="field-hint" id="date-hint"></p>
+        </div>
+        <div class="field">
+          <label for="decimal">{t.mapping.decimal}</label>
+          <select id="decimal">
+            <option value=",">{t.mapping.decimals[',']}</option>
+            <option value=".">{t.mapping.decimals['.']}</option>
+          </select>
+        </div>
+      </div>
+      <p class="notice notice-warn" id="date-ambiguous" role="alert" hidden></p>
+      <div id="types-block" hidden>
+        <h3>{t.mapping.typesTitle}</h3>
+        <p id="types-intro"></p>
+        <p class="notice notice-warn" id="types-too-many" hidden></p>
+        <div class="table-wrap">
+          <table class="types-table">
+            <thead>
+              <tr>
+                <th scope="col">{t.mapping.typesValue}</th>
+                <th scope="col" class="num">
+                  {t.mapping.typesCount}
+                </th>
+                <th scope="col">{t.mapping.typesClass}</th>
+              </tr>
+            </thead>
+            <tbody id="types-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <p class="notice" id="no-type-note" hidden>
+        {t.mapping.noType}
+      </p>
+      <p class="notice notice-warn" id="no-stock-note" hidden>
+        {t.mapping.noStock}
+      </p>
+      <div id="mapping-error" role="alert"></div>
+      <p>
+        <button type="button" class="btn" id="analyze-btn">
+          {t.mapping.analyze}
+        </button>
+      </p>
+      <div class="progress-wrap" id="analyze-progress" hidden>
+        <label for="analyze-progress-bar">{t.upload.building}</label>
+        <progress id="analyze-progress-bar"></progress>
+      </div>
+    </section>
+
+    <!-- Étape 3 : paramètres -->
+    <section id="step-params" class="card tool-section" aria-labelledby="params-title" hidden>
+      <h2 id="params-title">{t.params.title}</h2>
+      <p class="field-hint">{t.params.intro}</p>
+      <form id="params-form" novalidate>
+        <div class="grid-fields">
+          <fieldset>
+            <legend>{t.params.period}</legend>
+            <div class="radio-row">
+              <label>
+                <input type="radio" name="period" value="week" checked /> {t.params.periods.week}
+              </label>
+              <label>
+                <input type="radio" name="period" value="month" /> {t.params.periods.month}
+              </label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="p-lead">{t.params.lead}</label>
+            <input type="number" id="p-lead" min="0" step="any" value="14" inputmode="decimal" />
+          </div>
+          <div class="field">
+            <label for="p-review">{t.params.review}</label>
+            <input type="number" id="p-review" min="0" step="any" value="7" inputmode="decimal" />
+          </div>
+          <div class="field">
+            <label for="p-leadsd">{t.params.leadSd}</label>
+            <input
+              type="number"
+              id="p-leadsd"
+              min="0"
+              step="any"
+              value=""
+              placeholder="0"
+              inputmode="decimal"
+            />
+          </div>
+        </div>
+        <div class="grid-fields">
+          <div class="field">
+            <label for="p-method">{t.params.method}</label>
+            <select id="p-method">
+              <option value="demand">{t.params.methods.demand}</option>
+              <option value="demandLead">{t.params.methods.demandLead}</option>
+              <option value="coverage">{t.params.methods.coverage}</option>
+            </select>
+            <p class="field-hint" id="p-method-hint" hidden>
+              {t.params.needsSd}
+            </p>
+          </div>
+          <div class="field">
+            <label for="p-coverage">{t.params.coverageDays}</label>
+            <input
+              type="number"
+              id="p-coverage"
+              min="0"
+              step="any"
+              value="10"
+              inputmode="decimal"
+            />
+          </div>
+        </div>
+        <div class="grid-fields">
+          <fieldset>
+            <legend>{t.params.serviceLevels}</legend>
+            <div class="field-inline">
+              {(['A', 'B', 'C'] as const).map((c, i) => (
+                <label class="field-inline">
+                  {c}
+                  <input
+                    type="number"
+                    id={`p-sl-${c}`}
+                    min="50"
+                    max="99.99"
+                    step="any"
+                    value={[98, 95, 90][i]}
+                    inputmode="decimal"
+                    aria-label={`${fmt(t.params.classLabel, { cls: c })} (%)`}
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>{t.params.abcThresholds}</legend>
+            <div class="field-inline">
+              <label class="field-inline">
+                A{' '}
+                <input
+                  type="number"
+                  id="p-abc-a"
+                  min="1"
+                  max="100"
+                  step="any"
+                  value="80"
+                  aria-label="A (%)"
+                />
+              </label>
+              <label class="field-inline">
+                B{' '}
+                <input
+                  type="number"
+                  id="p-abc-b"
+                  min="0"
+                  max="99"
+                  step="any"
+                  value="15"
+                  aria-label="B (%)"
+                />
+              </label>
+              <output id="p-abc-rest" for="p-abc-a p-abc-b" class="field-hint"></output>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>{t.params.xyzThresholds}</legend>
+            <div class="field-inline">
+              <label class="field-inline">
+                {t.params.xLimit}
+                <input
+                  type="number"
+                  id="p-xyz-x"
+                  min="0"
+                  step="any"
+                  value="0.5"
+                  inputmode="decimal"
+                />
+              </label>
+              <label class="field-inline">
+                {t.params.yLimit}
+                <input
+                  type="number"
+                  id="p-xyz-y"
+                  min="0"
+                  step="any"
+                  value="1"
+                  inputmode="decimal"
+                />
+              </label>
+            </div>
+          </fieldset>
+        </div>
+      </form>
+      <div id="params-error" role="alert"></div>
+      <div id="report" class="notice" aria-live="polite"></div>
+    </section>
+
+    <!-- Étape 4 : résultats -->
+    <section id="step-results" class="card tool-section" aria-labelledby="results-title" hidden>
+      <h2 id="results-title" tabindex="-1">
+        {t.results.title}
+      </h2>
+      <p id="abc-basis" class="meta-line"></p>
+      <div class="summary-cards" id="cards"></div>
+      <div class="toolbar">
+        <div class="field grow">
+          <label for="f-search">{t.results.search}</label>
+          <input
+            type="search"
+            id="f-search"
+            placeholder={t.results.searchPlaceholder}
+            autocomplete="off"
+          />
+        </div>
+        <div class="field">
+          <label for="f-abc">{t.results.filterAbc}</label>
+          <select id="f-abc">
+            <option value="">{t.results.all}</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-xyz">{t.results.filterXyz}</label>
+          <select id="f-xyz">
+            <option value="">{t.results.all}</option>
+            <option value="X">X</option>
+            <option value="Y">Y</option>
+            <option value="Z">Z</option>
+            <option value="-">{t.results.na}</option>
+          </select>
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" id="f-alerts" /> {t.results.alertsOnly}
+        </label>
+        <div class="field">
+          <label for="f-size">{t.results.pageSize}</label>
+          <select id="f-size">
+            <option value="25">25</option>
+            <option value="50" selected>
+              50
+            </option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-secondary" id="export-csv">
+          {t.results.exportCsv}
+        </button>
+      </div>
+      <div class="table-wrap" id="results-wrap"></div>
+      <div class="pager">
+        <span id="pager-info" aria-live="polite"></span>
+        <button type="button" class="btn btn-secondary btn-small" id="pager-prev">
+          {t.results.prev}
+        </button>
+        <button type="button" class="btn btn-secondary btn-small" id="pager-next">
+          {t.results.next}
+        </button>
+      </div>
+
+      <div class="charts-grid" id="charts">
+        {chartIds.map((c) => (
+          <figure class:list={['chart-card', { wide: c.wide }]} aria-labelledby={`${c.id}-title`}>
+            <div class="chart-head">
+              <h3 id={`${c.id}-title`}>{c.title}</h3>
+              <button type="button" class="btn btn-secondary btn-small" data-download={c.id}>
+                {t.charts.download}
+              </button>
+            </div>
+            {c.id === 'chart-stock' && (
+              <p class="notice notice-warn" id="chart-stock-note" hidden>
+                {t.charts.relative}
+              </p>
+            )}
+            <div
+              class="chart"
+              id={c.id}
+              role="img"
+              aria-labelledby={`${c.id}-title`}
+              aria-describedby={`${c.id}-summary`}
+            />
+            <figcaption class="chart-summary" id={`${c.id}-summary`} />
+          </figure>
+        ))}
+      </div>
+
+      <details class="explain" id="explain">
+        <summary>{t.explain.title}</summary>
+        <div class="explain-body" id="explain-body">
+          <p>{t.explain.none}</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="card tool-section" aria-labelledby="share-title">
+      <h2 id="share-title">{t.share.title}</h2>
+      <p class="field-hint">{t.share.text}</p>
+      <div class="share-row">
+        <a
+          class="btn btn-secondary btn-small"
+          href={linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t.share.linkedin}
+        </a>
+        <a class="btn btn-secondary btn-small" href={mailto}>
+          {t.share.email}
+        </a>
+        <button
+          type="button"
+          class="btn btn-secondary btn-small"
+          id="share-copy"
+          data-url={homeUrl}
+        >
+          {t.share.copy}
+        </button>
+        <span id="share-status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+  </div>
+  <script type="application/json" id="tool-config" is:inline set:html={configJson} />
+</Base>
+
+<script>
+  import '../../tool/main';
+</script>
