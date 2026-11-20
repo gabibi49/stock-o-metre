@@ -1,0 +1,25 @@
+---
+import { dict } from '../i18n';
+import type { Lang } from '../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  crumbs: { label: string; href: string }[];
+}
+const { lang, crumbs } = Astro.props;
+const t = dict(lang);
+---
+
+<nav class="breadcrumb container" aria-label={t.common.breadcrumb.label}>
+  <ol>
+    {crumbs.map((c, i) => (
+      <li>
+        {i < crumbs.length - 1 ? (
+          <a href={c.href}>{c.label}</a>
+        ) : (
+          <span aria-current="page">{c.label}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>

@@ -1,0 +1,58 @@
+---
+import Logo from './Logo.astro';
+import { dict } from '../i18n';
+import { otherLang, pathTo, type Lang, type RouteKey } from '../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  routeKey?: RouteKey | undefined;
+}
+const { lang, routeKey } = Astro.props;
+const t = dict(lang);
+const other = otherLang(lang);
+const switchHref = pathTo(routeKey ?? 'home', other);
+
+const section = (keys: string[]): boolean =>
+  routeKey !== undefined && keys.some((k) => routeKey.startsWith(k));
+const nav = [
+  { href: pathTo('home', lang), label: t.common.nav.tool, current: routeKey === 'home' },
+  { href: pathTo('guides', lang), label: t.common.nav.guides, current: section(['guide']) },
+  {
+    href: pathTo('calculators', lang),
+    label: t.common.nav.calculators,
+    current: section(['calc']),
+  },
+  {
+    href: pathTo('methodology', lang),
+    label: t.common.nav.methodology,
+    current: routeKey === 'methodology',
+  },
+];
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={pathTo('home', lang)}>
+      <Logo />
+      <span>{t.common.siteName}</span>
+    </a>
+    <nav aria-label={t.common.nav.label}>
+      <ul class="nav-list">
+        {nav.map((n) => (
+          <li>
+            <a href={n.href} aria-current={n.current ? 'page' : undefined}>
+              {n.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <a class="lang-switch" href={switchHref} hreflang={other} title={t.common.langSwitch.hint}>
+      <span class="visually-hidden">{t.common.langSwitch.label} </span>
+      <span aria-hidden="true">{t.common.langSwitch.targetShort}</span>
+      <span class="visually-hidden" lang={other}>
+        {t.common.langSwitch.target}
+      </span>
+    </a>
+  </div>
+</header>

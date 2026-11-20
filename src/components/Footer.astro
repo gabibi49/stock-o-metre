@@ -1,0 +1,49 @@
+---
+import { dict } from '../i18n';
+import { pathTo, type Lang } from '../i18n/routes';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = dict(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p class="footer-local">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+      {t.common.footer.local}
+    </p>
+    <ul class="footer-links">
+      <li>
+        <a href={pathTo('guides', lang)}>{t.common.footer.guides}</a>
+      </li>
+      <li>
+        <a href={pathTo('calculators', lang)}>{t.common.footer.calculators}</a>
+      </li>
+      <li>
+        <a href={pathTo('methodology', lang)}>{t.common.footer.methodology}</a>
+      </li>
+      <li>
+        <a href={pathTo('privacy', lang)}>{t.common.footer.privacy}</a>
+      </li>
+      <li>
+        <a href={pathTo('legal', lang)}>{t.common.footer.legal}</a>
+      </li>
+    </ul>
+    <p class="footer-small">{t.common.footer.disclaimer}</p>
+    <p class="footer-small">
+      © {year} {t.common.siteName}
+    </p>
+  </div>
+</footer>

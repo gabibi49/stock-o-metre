@@ -1,0 +1,14 @@
+---
+/**
+ * Données structurées JSON-LD. Bloc de données (non exécuté) : compatible avec
+ * la CSP script-src 'self'. Le contenu vient uniquement de nos constantes ;
+ * « < » est échappé pour qu'aucune chaîne ne puisse fermer la balise.
+ */
+interface Props {
+  data: Record<string, unknown>[];
+}
+const { data } = Astro.props;
+const json = JSON.stringify(data.length === 1 ? data[0] : data).replace(/</g, '\\u003c');
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

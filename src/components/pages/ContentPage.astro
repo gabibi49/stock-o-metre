@@ -1,0 +1,49 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { dict } from '../../i18n';
+import { pathTo, type Lang } from '../../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  pageKey: 'methodology' | 'privacy' | 'legal';
+}
+const { lang, pageKey } = Astro.props;
+const d = dict(lang);
+const m = d.meta[pageKey];
+const entry = (
+  await getCollection('pages', (e) => e.data.lang === lang && e.data.key === pageKey)
+)[0];
+if (!entry) throw new Error(`Page manquante : ${pageKey} (${lang})`);
+const { Content } = await render(entry);
+const updated = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+}).format(new Date(entry.data.updated));
+---
+
+<Base
+  lang={lang}
+  routeKey={pageKey}
+  title={m.title}
+  description={m.description}
+  crumbs={[{ label: m.heading, href: pathTo(pageKey, lang) }]}
+>
+  <article class="container container-narrow">
+    <header class="page-head">
+      <h1>{m.heading}</h1>
+      <p class="meta-line">
+        {d.common.updated} <time datetime={entry.data.updated}>{updated}</time>
+      </p>
+    </header>
+    <div class="content">
+      <Content />
+    </div>
+    <div class="cta">
+      <p>{d.tool.privacyTitle}.</p>
+      <a class="btn" href={pathTo('home', lang)}>
+        {d.common.toTool}
+      </a>
+    </div>
+  </article>
+</Base>
