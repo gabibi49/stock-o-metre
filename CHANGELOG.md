@@ -6,8 +6,10 @@
 
 - Rubrique « Exercices corrigés » (FR/EN) : 10 exercices (stock de sécurité, point de commande, Wilson, ABC, taux de service), au niveau débutant et au niveau certification, avec une correction pas à pas qui s'ouvre au clic, sans script. Une page par exercice, une page d'index avec un tableau par thème et par niveau, et une image de partage.
 - Page « Kit ordonnancement » (FR/EN) : présentation du futur kit Excel (bientôt disponible, sans prix, formulaire ni collecte), description du fichier des OF (une ligne par opération), fichier CSV d'exemple, aperçu calculé au build (deux Gantt, charge par poste, comparaison de règles de séquencement).
+- Page « Simulation d'entreprise » (FR/EN), scénario « Le négoce de pièces » : 24 réunions S&OP mensuelles, plan par famille sur 3 mois, décisions par article (prévision, service visé, quantité), mode semaine par semaine avec commande forcée (normale ou express), bilan face à un pilote automatique. Partie reproductible (code de partie), sauvegarde dans le navigateur et dans un fichier, export de l'historique au format de l'outil. Moteur prêt pour un scénario avec nomenclatures et postes de charge.
+- Page de confidentialité : ligne sur la sauvegarde de la simulation dans le stockage local.
 - Test unitaire qui recalcule toutes les corrections avec le moteur du site.
-- Menu : entrée « Exercices » ; « Méthodologie » passe dans le pied de page. Bandeau « Aller plus loin » en bas de l'accueil.
+- Menu : entrées « Exercices », « Kit ordonnancement » et « Simulation » ; « Méthodologie » passe dans le pied de page. Bandeau « Aller plus loin » en bas de l'accueil.
 
 ## [1.0.0] — 2026-11-20
 

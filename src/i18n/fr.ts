@@ -16,6 +16,7 @@ const fr = {
       methodology: 'Méthodologie',
       exercises: 'Exercices',
       kit: 'Kit ordonnancement',
+      simulation: 'Simulation',
     },
     langSwitch: {
       label: 'Langue :',
@@ -33,6 +34,7 @@ const fr = {
       calculators: 'Calculateurs',
       exercises: 'Exercices corrigés',
       kit: 'Kit ordonnancement',
+      simulation: 'Simulation d’entreprise',
       disclaimer:
         'Outil d’aide à la décision fourni sans garantie : vérifiez les résultats avant de modifier vos paramètres de réapprovisionnement.',
     },
@@ -114,6 +116,12 @@ const fr = {
       description:
         'Futur classeur Excel de gestion des ordres de fabrication : planning des OF, diagramme de Gantt, charge et capacité par poste, séquencement et priorités. À partir d’un export CSV, une ligne par opération.',
       heading: 'Kit ordonnancement des ordres de fabrication',
+    },
+    simulation: {
+      title: 'Simulation d’entreprise : jeu de S&OP et de gestion des stocks en ligne',
+      description:
+        'Pilotez 2 ans de stock d’un distributeur de pièces, une réunion S&OP par mois : prévisions, stock de sécurité, point de commande, quantité de Wilson. Face à un pilote automatique, dans votre navigateur.',
+      heading: 'Simulation d’entreprise : le négoce de pièces',
     },
     calcSafety: {
       title: 'Calculateur de stock de sécurité en ligne (formule détaillée)',
@@ -694,6 +702,245 @@ const fr = {
       'Le kit est en préparation. Il n’y a ni inscription ni liste d’attente : revenez simplement sur cette page.',
     homeText:
       'Un futur classeur Excel pour planifier vos ordres de fabrication : planning, Gantt, charge des postes. Bientôt disponible.',
+  },
+
+  sim: {
+    badge: 'Jeu de simulation',
+    lead: 'Pilotez pendant 2 ans le stock d’un distributeur de pièces industrielles. Chaque mois, vous tenez la réunion S&OP : prévisions, niveau de service, quantités. Les semaines s’enchaînent ensuite toutes seules, et un « pilote automatique » joue la même demande sans jamais rien changer.',
+    noscript:
+      'La simulation a besoin de JavaScript. Tout se calcule dans votre navigateur : rien n’est envoyé.',
+    you: 'Vous',
+    pilot: 'Pilote automatique',
+    saveFile: 'simulation-{seed}-mois-{month}.json',
+    items: {
+      'R-6204': 'Roulement 6204',
+      'R-6305': 'Roulement 6305',
+      'C-A42': 'Courroie A42',
+      'C-B55': 'Courroie B55',
+      'F-H10': 'Filtre hydraulique H10',
+      'F-N20': 'Filtre N20',
+    },
+    families: { bearings: 'Roulements', belts: 'Courroies', filters: 'Filtres' },
+    home: {
+      title: 'Votre partie',
+      text: '24 réunions S&OP mensuelles, une partie d’environ une heure, que vous pouvez interrompre et reprendre.',
+      newGame: 'Nouvelle partie',
+      resume: 'Reprendre la partie en cours ({company}, mois {month}/24)',
+      load: 'Reprendre une partie depuis un fichier…',
+      loadError: 'Ce fichier n’est pas une partie de simulation valide.',
+      replaceConfirm:
+        'Une partie est en cours dans ce navigateur. La remplacer par une nouvelle partie ?',
+      note: 'Tout se calcule dans votre navigateur. La partie en cours est gardée dans ce navigateur ; « Télécharger ma partie » en fait un fichier sur votre ordinateur. Rien n’est envoyé.',
+    },
+    setup: {
+      title: 'Votre entreprise',
+      company: 'Nom de l’entreprise',
+      companyDefault: 'Distrib’Pièces',
+      currency: 'Devise',
+      other: 'Autre…',
+      otherSymbol: 'Symbole de la devise',
+      unit: 'Unité',
+      unitDefault: 'pièces',
+      units: 'pièces|unités|kg|m|boîtes',
+      profile: 'Profil de difficulté',
+      profiles: { easy: 'Facile', normal: 'Normal', hard: 'Difficile' },
+      custom: 'personnalisé',
+      profileHint:
+        'Le profil n’est qu’un point de départ : chaque valeur de la colonne « Vos réglages » se modifie.',
+      paramsCaption: 'Paramètres de la partie',
+      param: 'Paramètre',
+      yours: 'Vos réglages',
+      params: {
+        cv: 'Variabilité de la demande (CV)',
+        leadWeeks: 'Délai fournisseur (semaines)',
+        leadSd: 'Écart-type du délai (semaines)',
+        eventCount: 'Nombre d’événements',
+        events: 'Événements',
+        shortage: 'En cas de rupture',
+        warehouse: 'Capacité de l’entrepôt (palettes)',
+      },
+      eventModes: { announced: 'annoncés', partial: 'annoncés en partie', hidden: 'surprises' },
+      shortageModes: { backorder: 'reliquats', lost: 'ventes perdues' },
+      seed: 'Code de partie',
+      seedHint:
+        'Même code et mêmes réglages = même demande : pratique pour comparer entre collègues ou en formation.',
+      reroll: 'Autre code',
+      start: 'Commencer au mois 1',
+      back: 'Retour',
+      invalid: 'Un réglage est vide ou hors des bornes : vérifiez les valeurs saisies.',
+    },
+    game: {
+      title: '{company} · mois {n} / 24',
+      monthLabel: '{month}, année {year}',
+      fillRate: 'Taux de service (cumul)',
+      stock: 'Stock (valeur)',
+      result: 'Résultat logistique (cumul)',
+      pilotValue: 'Pilote : {value}',
+      startTitle: '1. Le point de départ',
+      firstMonth:
+        'Vous reprenez le stock de l’entreprise avec un an d’historique de ventes. Les réglages proposés sont ceux du pilote automatique : à vous de les améliorer.',
+      pastTitle: '1. Ce qui s’est passé en {month}',
+      pastLine:
+        'Ventes servies à temps : {served} sur {demand} demandées ({rate}). Résultat du mois : {result} (pilote : {pilot}).',
+      upcomingTitle: '2. Ce qui s’annonce',
+      upcomingNone: 'Rien d’annoncé pour l’instant.',
+      planTitle: '3. Plan (PIC) par famille sur 3 mois',
+      planHint:
+        'Projection avec une demande égale à vos prévisions et des délais normaux. Elle se met à jour à chaque saisie.',
+      plan: {
+        caption: 'Plan industriel et commercial, en {unit}',
+        family: 'Famille',
+        line: 'Ligne',
+        sales: 'Ventes prévues',
+        receipts: 'Réceptions prévues',
+        stockEnd: 'Stock fin de mois',
+        cover: 'Couverture',
+        weeks: '{n} sem.',
+        warehouse: 'Entrepôt',
+        pallets: 'Palettes (capacité {cap})',
+      },
+      decisionsTitle: '4. Vos décisions par article',
+      decisionsHint:
+        'Prévisions par semaine. Le stock de sécurité (SS) et le point de commande (PC) se recalculent à chaque saisie. La quantité indiquée est commandée dès que la position de stock passe au niveau du PC ou en dessous ; 0 = plus de commande automatique.',
+      decCaption: 'Décisions du mois (quantités en {unit})',
+      cols: {
+        item: 'Article',
+        stock: 'Stock',
+        onOrder: 'En commande',
+        forecast: 'Prévision / sem. {month}',
+        service: 'Service visé (%)',
+        ss: 'SS',
+        rop: 'PC',
+        qty: 'Quantité commandée',
+      },
+      backlog: 'dont {n} en reliquat',
+      forecastLabel: 'Prévision hebdomadaire de {item} pour {month}',
+      serviceLabel: 'Taux de service visé pour {item}, en %',
+      qtyLabel: 'Quantité commandée pour {item}',
+      eoqHint: 'Wilson : {q}',
+      suggestions: 'Reprendre les suggestions',
+      launch: 'Lancer le mois ({weeks} semaines)',
+      weekMode: 'Avancer semaine par semaine',
+      invalid: 'Une saisie est vide ou hors bornes : corrigez les cases en rouge.',
+      download: 'Télécharger ma partie',
+      exportHistory: 'Exporter l’historique des ventes (CSV)',
+      abandon: 'Abandonner la partie',
+      abandonConfirm:
+        'Abandonner la partie ? Elle sera effacée de ce navigateur (un fichier téléchargé reste utilisable).',
+    },
+    events: {
+      promo: 'Promotion d’un client sur {item} en {month} : +60 % sur le mois.',
+      delay:
+        'Incident chez le fournisseur de {item} en {month} : les commandes passées ce mois-là arrivent avec {weeks} semaines de retard.',
+      priceRise: 'Hausse du prix d’achat de {item} à partir de {month} : +8 %.',
+      shiftUp: 'Un nouveau client commande {item} à partir de {month} : +25 % de demande.',
+      shiftDown: 'Un client cesse de commander {item} à partir de {month} : −20 % de demande.',
+      launch:
+        'Lancement de {item} en {month}. Pas d’historique : le commercial estime {q} {unit} par semaine.',
+      endOfLife:
+        'Le fabricant arrête {item} : plus aucune vente à partir de {month}. Le stock restant à la fin de la partie ne vaudra plus que 20 % de son coût.',
+    },
+    week: {
+      subtitle: '{month} · semaine {k} sur {n} jouée',
+      startHint:
+        'Les décisions du mois sont prises. Avancez d’une semaine à la fois ; vous pouvez forcer une commande avant chaque semaine.',
+      hint: 'Situation à la fin de la semaine écoulée.',
+      caption: 'Situation après la semaine {w} (quantités en {unit})',
+      cols: {
+        item: 'Article',
+        stock: 'Stock',
+        demand: 'Demande',
+        short: 'Manquants',
+        backlog: 'Reliquats',
+        onOrder: 'En commande',
+        position: 'Position',
+        rop: 'PC',
+      },
+      arriving: '{qty} (sem. {w})',
+      forceTitle: 'Forcer une commande',
+      forceItem: 'Article',
+      forceQty: 'Quantité ({unit})',
+      modeLegend: 'Type de commande',
+      normal: 'Normale : délai {l} sem., prix normal',
+      express: 'Express : délai 1 sem., prix +15 %',
+      order: 'Commander',
+      invalid: 'Indiquez une quantité entière, au moins 1.',
+      pendingNormal: 'Commande normale de {qty} de {item}, passée au début de la semaine.',
+      pendingExpress: 'Commande express de {qty} de {item}, passée au début de la semaine.',
+      cancel: 'Annuler',
+      next: 'Semaine suivante',
+      finish: 'Finir le mois automatiquement',
+    },
+    chart: {
+      month: 'mois {n}',
+      stock: 'Valeur du stock en fin de mois',
+      result: 'Résultat logistique cumulé',
+      fill: 'Taux de service du mois',
+    },
+    end: {
+      title: 'Bilan · {company} · code {seed} · {profile}',
+      caption: 'Vos résultats sur 24 mois, comparés au pilote automatique',
+      cols: { indicator: 'Indicateur', diff: 'Écart' },
+      rows: {
+        result: 'Résultat logistique',
+        fillRate: 'Taux de service (quantités)',
+        cycleRate: 'Semaines sans rupture',
+        avgStock: 'Stock moyen',
+        turns: 'Rotation du stock (par an)',
+        obsolete: 'Stock déprécié en fin de vie',
+      },
+      insightsTitle: 'Ce que montre votre partie',
+      insightShort: '{share} de vos manquants (en quantité) viennent de {item}.',
+      insightNoShort: 'Aucun manquant en 2 ans : regardez ce que ce confort vous a coûté en stock.',
+      insightStockHigher:
+        'Votre stock moyen est {diff} plus haut que celui du pilote, pour un taux de service de {you} contre {pilot}.',
+      insightStockLower:
+        'Votre stock moyen est {diff} plus bas que celui du pilote, pour un taux de service de {you} contre {pilot}.',
+      insightObsolete:
+        'Il vous reste {qty} de {item} à la fin : {loss} de dépréciation. Le pilote en garde {pilot}.',
+      insightObsoleteNone:
+        'Plus aucun {item} en stock à la fin : pas de dépréciation. Le pilote en garde {pilot}.',
+      replay: 'Rejouer le même code',
+      newGame: 'Nouvelle partie',
+    },
+    csv: {
+      file: 'simulation-historique.csv',
+      header: 'date|article|libellé|quantité|type_mouvement|prix_unitaire',
+      sale: 'Vente',
+    },
+    page: {
+      rulesTitle: 'Les règles du jeu',
+      weekTitle: 'Chaque semaine, pour chaque article',
+      week: [
+        'Les commandes forcées partent, puis les livraisons attendues arrivent en stock.',
+        'Les ventes sont servies sur le stock, les reliquats en premier. Ce qui manque devient un reliquat, ou une vente perdue selon le profil.',
+        'En fin de semaine, si la position de stock (stock + en commande − reliquats) est au niveau du point de commande ou en dessous, la quantité choisie est commandée au fournisseur.',
+        'Les coûts de la semaine sont comptés : possession du stock, palettes hors capacité, pénalités de rupture.',
+      ],
+      formulasTitle: 'Les formules, les mêmes que sur le site',
+      formulas: [
+        'Écart-type de l’erreur de prévision σ : sur les 13 dernières semaines (ventes − prévision).',
+        'Stock de sécurité : SS = Z × σ × √(L + R), avec R = 1 semaine, car le stock est contrôlé chaque fin de semaine. Si le délai varie : SS = Z × √((L + R) × σ² + d² × σL²).',
+        'Point de commande : PC = d × (L + R) + SS, avec d la prévision hebdomadaire du mois.',
+        'Quantité suggérée (Wilson) : Q* = √(2 × D × S / (c × i)), avec D = 52 × d, S le coût d’une commande, c le coût d’achat et i = 25 % par an.',
+        'Possession : valeur du stock × 25 % / 52, chaque semaine.',
+      ],
+      scoreTitle: 'Le score',
+      score:
+        'Résultat logistique = marge brute − coûts de commande − possession − dépassement d’entrepôt − pénalités de rupture − dépréciation du stock en fin de vie. La pénalité de rupture vaut 10 % du prix de vente par unité manquante (et par semaine d’attente pour un reliquat). Le taux de service est affiché à côté : il est déjà payé dans le score.',
+      pilotTitle: 'Le pilote automatique',
+      pilot:
+        'Il garde pendant 24 mois les réglages proposés au mois 1 : prévision égale à la moyenne des 13 dernières semaines, service visé 95 %, quantité de Wilson. Il joue exactement la même demande que vous, car le hasard est tiré par article à partir du code de partie, sans dépendre de vos décisions.',
+      privacyTitle: 'Sauvegarde et vie privée',
+      privacy:
+        'La partie est gardée dans le stockage local de votre navigateur : seulement les réglages, le code de partie et vos décisions. Le fichier « Télécharger ma partie » contient les mêmes informations. Rien n’est envoyé, il n’y a ni compte ni cookie.',
+      exportHint:
+        'L’historique des ventes s’exporte au format du fichier de l’outil : vous pouvez l’analyser avec Stock-o-mètre (classement ABC-XYZ, stock de sécurité).',
+      scenarioB:
+        'Ce scénario est celui d’un négociant : il achète et revend. Un second scénario, avec des composants et des produits finis, est prévu.',
+    },
+    homeText:
+      'Deux ans de réunions S&OP en une heure : prévisions, stock de sécurité, quantités, face à un pilote automatique.',
   },
 
   notFound: {

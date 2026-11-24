@@ -1,7 +1,7 @@
 ---
 key: privacy
 lang: en
-updated: '2026-11-20'
+updated: '2026-11-24'
 ---
 
 **In short: Stock-o-mètre collects no data.** Your file is read and analysed in your browser. It is never sent to any server.
@@ -31,6 +31,8 @@ To spare you from mapping columns again for every file, the tool stores the foll
 - how movement types are classified (for example “Sale” → issue).
 
 Your file’s rows, items, quantities and prices are **never** stored. These settings stay on your computer and are never transmitted. To erase them, clear this site’s data in your browser settings.
+
+The [business simulation](/en/simulation/) keeps your current game in the same local storage: the game settings, its code and your monthly decisions, nothing else. No data is uploaded. To erase it, use the “Abandon the game” button or clear this site’s data.
 
 ## Hosting
 

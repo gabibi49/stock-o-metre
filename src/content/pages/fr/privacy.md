@@ -1,7 +1,7 @@
 ---
 key: privacy
 lang: fr
-updated: '2026-11-20'
+updated: '2026-11-24'
 ---
 
 **En résumé : Stock-o-mètre ne collecte aucune donnée.** Votre fichier est lu et analysé dans votre navigateur. Il n’est jamais envoyé sur un serveur.
@@ -31,6 +31,8 @@ Pour vous éviter de refaire l’association des colonnes à chaque fichier, l�
 - le classement des types de mouvement (par exemple « Vente » → sortie).
 
 Les lignes de votre fichier, vos articles, quantités et prix ne sont **jamais** mémorisés. Ces réglages restent sur votre ordinateur et ne sont jamais transmis. Pour les effacer, supprimez les données du site dans les réglages de votre navigateur.
+
+La [simulation d’entreprise](/fr/simulation/) garde votre partie en cours dans ce même stockage local : les réglages de la partie, son code et vos décisions mensuelles, rien d’autre. Aucune donnée n’est envoyée. Pour l’effacer, utilisez le bouton « Abandonner la partie » ou supprimez les données du site.
 
 ## Hébergement
 

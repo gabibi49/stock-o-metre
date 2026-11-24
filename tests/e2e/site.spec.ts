@@ -13,7 +13,7 @@ test('toutes les pages : CSP, référent, hreflang réciproques, canonical, aucu
   request,
 }) => {
   const paths = await sitemapPaths(request);
-  expect(paths.length).toBe(57); // racine + 18 pages × 2 langues + 10 exercices × 2 langues
+  expect(paths.length).toBe(59); // racine + 19 pages × 2 langues + 10 exercices × 2 langues
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -134,6 +134,7 @@ test.describe('mobile', () => {
     '/stock-o-metre/fr/methodologie/',
     '/stock-o-metre/fr/exercices/',
     '/stock-o-metre/fr/kit-ordonnancement/',
+    '/stock-o-metre/fr/simulation/',
     '/stock-o-metre/fr/exercices/classement-abc-xyz-politique/',
   ]) {
     test(`pas de défilement horizontal : ${path}`, async ({ page }) => {
@@ -193,6 +194,99 @@ test('kit ordonnancement : présentation seule, fichier CSV, aperçu calculé', 
   expect(csv).toContain('of;article;quantite;operation;poste');
   const en = await (await request.get('/stock-o-metre/work-orders-template.csv')).text();
   expect(en).toContain('work_order,item,quantity,operation,work_center');
+});
+
+test('simulation : partie, semaine par semaine, sauvegarde et reprise depuis un fichier', async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on('request', (r) => {
+    if (!r.url().startsWith('http://localhost')) external.push(r.url());
+  });
+  page.on('dialog', (d) => void d.accept());
+  await page.goto('/stock-o-metre/fr/');
+  await page.locator('nav a', { hasText: 'Simulation' }).click();
+  await expect(page).toHaveURL(/\/fr\/simulation\/$/);
+
+  // Paramétrage : entreprise, devise, profil.
+  await page.getByRole('button', { name: 'Nouvelle partie' }).click();
+  await page.locator('#sim-company').fill('Ma Société');
+  await page.locator('#sim-currency').selectOption('CHF');
+  await page.locator('#sim-seed').fill('482913');
+  await page.getByRole('button', { name: 'Commencer au mois 1' }).click();
+  await expect(page.locator('#sim-title')).toHaveText('Ma Société · mois 1 / 24');
+  await expect(page.locator('.summary-cards')).toContainText('CHF');
+  await expect(page.locator('table.sim-plan-table')).toContainText('Roulements');
+
+  // Le point de commande se recalcule à la saisie.
+  const row = page.locator('table.sim-decisions tbody tr', { hasText: 'R-6204' });
+  const rop = row.locator('td').nth(7);
+  const before = await rop.textContent();
+  await row.locator('input[data-field="f0"]').fill('200');
+  await expect(rop).not.toHaveText(before as string);
+  await row.locator('input[data-field="service"]').fill('120');
+  await expect(page.getByRole('button', { name: /Lancer le mois/ })).toBeDisabled();
+  await row.locator('input[data-field="service"]').fill('95');
+  await page.getByRole('button', { name: /Lancer le mois/ }).click();
+  await expect(page.locator('#sim-title')).toHaveText('Ma Société · mois 2 / 24');
+  await expect(page.locator('#sim-app')).toContainText('Ce qui s’est passé en janvier');
+
+  // Semaine par semaine, avec une commande express.
+  await page.getByRole('button', { name: 'Avancer semaine par semaine' }).click();
+  await expect(page.locator('.sim-sub')).toContainText('semaine 1 sur 4 jouée');
+  await page.locator('#sim-force-item').selectOption('C-B55');
+  await page.locator('#sim-force-qty').fill('150');
+  await page.getByLabel('Express : délai 1 sem., prix +15 %').check();
+  await page.getByRole('button', { name: 'Commander' }).click();
+  await expect(page.locator('.sim-events')).toContainText('Commande express de 150 pièces');
+  await page.getByRole('button', { name: 'Semaine suivante' }).click();
+  await expect(page.locator('.sim-sub')).toContainText('semaine 2 sur 4 jouée');
+
+  // Reprise après rechargement (stockage local).
+  await page.reload();
+  await page.getByRole('button', { name: /Reprendre la partie en cours/ }).click();
+  await expect(page.locator('.sim-sub')).toContainText('semaine 2 sur 4 jouée');
+
+  // Téléchargement de la partie, abandon, puis reprise depuis le fichier.
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Télécharger ma partie' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('simulation-482913-mois-2.json');
+  const file = await download.path();
+  await page.getByRole('button', { name: 'Abandonner la partie' }).click();
+  await expect(page.getByRole('button', { name: 'Nouvelle partie' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Reprendre la partie en cours/ })).toHaveCount(0);
+  await page.locator('#sim-file').setInputFiles(file);
+  await expect(page.locator('.sim-sub')).toContainText('semaine 2 sur 4 jouée');
+
+  // Un fichier qui n'est pas une partie est refusé.
+  await page.getByRole('button', { name: 'Abandonner la partie' }).click();
+  await page.locator('#sim-file').setInputFiles({
+    name: 'autre.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"app":"autre"}'),
+  });
+  await expect(page.locator('#sim-app [role="alert"]')).toHaveText(
+    'Ce fichier n’est pas une partie de simulation valide.',
+  );
+  expect(external).toEqual([]);
+});
+
+test('simulation (EN) : bilan au bout des 24 mois', async ({ page }) => {
+  await page.goto('/stock-o-metre/en/simulation/');
+  await page.getByRole('button', { name: 'New game' }).click();
+  await page.locator('#sim-seed').fill('111111');
+  await page.getByLabel('Hard').check();
+  await page.getByRole('button', { name: 'Start month 1' }).click();
+  for (let m = 1; m <= 24; m++) {
+    await expect(page.locator('#sim-title')).toContainText(`month ${m} / 24`);
+    await page.getByRole('button', { name: /Run the month/ }).click();
+  }
+  await expect(page.locator('#sim-title')).toHaveText('Results · PartsCo · code 111111 · Hard');
+  await expect(page.locator('table.sim-end-table tbody tr')).toHaveCount(6);
+  await expect(page.locator('svg.sim-chart')).toHaveCount(3);
+  await expect(page.locator('#sim-app')).toContainText('What your game shows');
 });
 
 test('page 404 bilingue', async ({ page }) => {

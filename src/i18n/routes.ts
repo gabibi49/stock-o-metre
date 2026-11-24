@@ -39,6 +39,7 @@ export const ROUTES = {
   },
   exercises: { fr: '/fr/exercices/', en: '/en/exercises/' },
   kit: { fr: '/fr/kit-ordonnancement/', en: '/en/production-scheduling-kit/' },
+  simulation: { fr: '/fr/simulation/', en: '/en/simulation/' },
   methodology: { fr: '/fr/methodologie/', en: '/en/methodology/' },
   privacy: { fr: '/fr/confidentialite/', en: '/en/privacy/' },
   legal: { fr: '/fr/mentions-legales/', en: '/en/legal-notice/' },

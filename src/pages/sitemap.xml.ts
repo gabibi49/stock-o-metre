@@ -19,7 +19,10 @@ export const GET: APIRoute = async () => {
       const priority =
         key === 'home'
           ? '1.0'
-          : key.startsWith('guide') || key.startsWith('calc') || key === 'exercises'
+          : key.startsWith('guide') ||
+              key.startsWith('calc') ||
+              key === 'exercises' ||
+              key === 'simulation'
             ? '0.8'
             : '0.4';
       const paths = { fr: pathTo(key, 'fr'), en: pathTo(key, 'en') };

@@ -1,0 +1,97 @@
+---
+/**
+ * Simulation d'entreprise (scénario A : le négoce de pièces). La page fournit
+ * le cadre et les règles du jeu ; le jeu lui-même est construit dans le
+ * navigateur par src/sim/main.ts. Rien n'est envoyé : stockage local et
+ * fichiers seulement.
+ */
+import Base from '../../layouts/Base.astro';
+import { dict, LOCALES } from '../../i18n';
+import { pathTo, type Lang } from '../../i18n/routes';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = dict(lang);
+const m = d.meta.simulation;
+const s = d.sim;
+const config = JSON.stringify({ lang, locale: LOCALES[lang], t: s }).replace(/</g, '\\u003c');
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: m.heading,
+    description: m.description,
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Any (web browser)',
+    inLanguage: lang,
+    isAccessibleForFree: true,
+  },
+];
+---
+
+<Base
+  lang={lang}
+  routeKey="simulation"
+  title={m.title}
+  description={m.description}
+  jsonLd={jsonLd}
+  crumbs={[{ label: d.common.nav.simulation, href: pathTo('simulation', lang) }]}
+>
+  <div class="container sim">
+    <header class="page-head">
+      <p>
+        <span class="level-badge">{s.badge}</span>
+      </p>
+      <h1>{m.heading}</h1>
+      <p class="lead">{s.lead}</p>
+    </header>
+
+    <div id="sim-app" class="sim-app" tabindex="-1" aria-live="polite">
+      <noscript>
+        <p class="card">{s.noscript}</p>
+      </noscript>
+    </div>
+
+    <div class="content container-narrow sim-rules">
+      <h2>{s.page.rulesTitle}</h2>
+      <h3>{s.page.weekTitle}</h3>
+      <ol>
+        {s.page.week.map((line) => (
+          <li>{line}</li>
+        ))}
+      </ol>
+      <h3>{s.page.formulasTitle}</h3>
+      <ul>
+        {s.page.formulas.map((line) => (
+          <li>{line}</li>
+        ))}
+      </ul>
+      <p>
+        <a href={pathTo('calcSafety', lang)}>{d.meta.calcSafety.heading}</a>
+        {' · '}
+        <a href={pathTo('calcRop', lang)}>{d.meta.calcRop.heading}</a>
+        {' · '}
+        <a href={pathTo('exercises', lang)}>{d.meta.exercises.heading}</a>
+      </p>
+      <h3>{s.page.scoreTitle}</h3>
+      <p>{s.page.score}</p>
+      <h3>{s.page.pilotTitle}</h3>
+      <p>{s.page.pilot}</p>
+      <h3>{s.page.privacyTitle}</h3>
+      <p>
+        {s.page.privacy} <a href={pathTo('privacy', lang)}>{d.common.footer.privacy}</a>
+      </p>
+      <p>
+        {s.page.exportHint} <a href={pathTo('home', lang)}>{d.common.nav.tool}</a>
+      </p>
+      <p class="field-hint">{s.page.scenarioB}</p>
+    </div>
+  </div>
+  <script type="application/json" id="sim-config" is:inline set:html={config} />
+</Base>
+
+<script>
+  import '../../sim/main';
+</script>

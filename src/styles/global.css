@@ -1193,3 +1193,134 @@ svg.gantt {
   stroke: var(--border-strong);
   stroke-width: 1;
 }
+
+/* ---------- Simulation d'entreprise ---------- */
+.sim-app {
+  margin: 16px 0 32px;
+}
+.sim-app:focus {
+  outline: none;
+}
+.sim-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+.sim-secondary {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.sim-sub {
+  color: var(--muted);
+  margin-top: -8px;
+}
+.sim-block {
+  display: block;
+}
+.sim-neg {
+  color: var(--under);
+  font-weight: 600;
+}
+.sim-play h3 {
+  margin-top: 28px;
+}
+table.sim-decisions input[type='number'] {
+  width: 6.5em;
+}
+table.sim-params input[type='number'] {
+  width: 7em;
+}
+tr.sim-group > th,
+tr.sim-group > td {
+  border-top: 2px solid var(--border-strong);
+}
+.sim-force {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: flex-end;
+}
+.sim-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.sim-events li + li {
+  margin-top: 4px;
+}
+.sim-chart-title {
+  margin: 20px 0 4px;
+  font-size: 0.95rem;
+}
+svg.sim-chart {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  height: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  font-family: var(--font);
+}
+.sim-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.sim-axis {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.sim-line {
+  fill: none;
+  stroke-width: 2;
+}
+.sim-line.sim-you {
+  stroke: var(--accent);
+}
+.sim-line.sim-pilot {
+  stroke: var(--over);
+  stroke-dasharray: 6 4;
+}
+.sim-dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.sim-dot.sim-you {
+  fill: var(--accent);
+}
+.sim-dot.sim-pilot {
+  fill: var(--over);
+}
+.sim-end-label {
+  fill: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.sim-legend {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.sim-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sim-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 0;
+  border-top: 3px solid var(--accent);
+}
+.sim-swatch.sim-pilot {
+  border-top: 3px dashed var(--over);
+}
+.sim-rules {
+  margin-top: 40px;
+}
