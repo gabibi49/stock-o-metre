@@ -1,0 +1,298 @@
+---
+/**
+ * Page de présentation du futur « Kit ordonnancement ». Aucun prix, aucun
+ * formulaire, aucune collecte : description, fichier d'exemple et aperçu
+ * calculé au build sur ce fichier.
+ */
+import Base from '../../layouts/Base.astro';
+import KitGantt from '../KitGantt.astro';
+import { dict, fmt, LOCALES } from '../../i18n';
+import { asset, pathTo, type Lang } from '../../i18n/routes';
+import { exampleOperations, HORIZON, slot, workingDays, WORK_CENTERS } from '../../lib/kit-example';
+import {
+  loadByCenter,
+  scheduleForward,
+  summarizeOrders,
+  type Operation,
+  type ScheduledOperation,
+} from '../../lib/scheduling';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = dict(lang);
+const m = d.meta.kit;
+const k = d.kit;
+const locale = LOCALES[lang];
+const colon = lang === 'fr' ? ' : ' : ': ';
+
+// --- Aperçu : quatre règles de séquencement sur le fichier d'exemple ---
+const ADJUSTED = 'OF-1004';
+const ops = exampleOperations();
+const raised: Operation[] = ops.map((o) => (o.order === ADJUSTED ? { ...o, priority: 1 } : o));
+const scenarios = [
+  { key: 'base', schedule: scheduleForward(ops) },
+  { key: 'grouped', schedule: scheduleForward(ops, { groupSetups: true }) },
+  { key: 'priority', schedule: scheduleForward(raised) },
+  { key: 'both', schedule: scheduleForward(raised, { groupSetups: true }) },
+] as const;
+const lateOf = (s: ScheduledOperation[]) =>
+  summarizeOrders(s)
+    .filter((o) => o.late)
+    .map((o) => o.order);
+const base = scenarios[0].schedule;
+const after = scenarios[3].schedule;
+
+const one = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+const two = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+const pct = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
+const dayFmt = new Intl.DateTimeFormat(locale, {
+  weekday: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+const dayLabel = (iso: string) => dayFmt.format(new Date(`${iso}T00:00:00Z`));
+const at = (h: number, isEnd: boolean) => {
+  const s = slot(h, isEnd);
+  return `${dayLabel(s.date)} ${s.time}`;
+};
+
+const maxEnd = Math.max(...scenarios.flatMap((s) => s.schedule.map((x) => x.end)));
+const axisDays = workingDays(Math.ceil(maxEnd / HORIZON.hoursPerDay)).map(dayLabel);
+const tip = (s: ScheduledOperation) =>
+  `${s.order} · ${s.item} · op. ${s.seq} · ${k.centers[s.workCenter as keyof typeof k.centers]} · ${at(s.start, false)} → ${at(s.end, true)}`;
+
+const capacity = HORIZON.days.length * HORIZON.hoursPerDay;
+const load = loadByCenter(base);
+const maxPct = Math.max(...[...load.values()].map((h) => h / capacity));
+
+const columnKeys = Object.keys(k.columns) as (keyof typeof k.columns)[];
+const featureKeys = Object.keys(k.features) as (keyof typeof k.features)[];
+const csvHref = asset(k.templateFile);
+
+// Barres de charge (SVG : pas d'attribut style, pour la CSP).
+const LOAD_W = 760;
+const LOAD_LABEL = 118;
+const LOAD_ROW = 34;
+const loadX = (h: number) => LOAD_LABEL + (h / capacity) * (LOAD_W - LOAD_LABEL - 190);
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: m.heading,
+    description: m.description,
+    inLanguage: lang,
+  },
+];
+---
+
+<Base
+  lang={lang}
+  routeKey="kit"
+  title={m.title}
+  description={m.description}
+  jsonLd={jsonLd}
+  crumbs={[{ label: d.common.nav.kit, href: pathTo('kit', lang) }]}
+>
+  <div class="container container-narrow kit">
+    <header class="page-head">
+      <p>
+        <span class="level-badge">{k.badge}</span>
+      </p>
+      <h1>{m.heading}</h1>
+      <p class="lead">{k.lead}</p>
+    </header>
+
+    <div class="content">
+      <h2>{k.problemTitle}</h2>
+      <p>{k.problem}</p>
+
+      <h2>{k.principleTitle}</h2>
+      <ol>
+        <li>{k.principle.export}</li>
+        <li>{k.principle.compute}</li>
+        <li>{k.principle.adjust}</li>
+      </ol>
+
+      <h2>{k.featuresTitle}</h2>
+      <ul>
+        {featureKeys.map((f) => (
+          <li>
+            <strong>{k.features[f]}</strong>
+            {colon}
+            {k.featureTexts[f]}
+          </li>
+        ))}
+      </ul>
+
+      <h2>{k.fileTitle}</h2>
+      <p>{k.fileIntro}</p>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">{k.columnHead}</th>
+            <th scope="col">{k.meaningHead}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {columnKeys.map((c) => (
+            <tr>
+              <td>
+                <code>{k.columns[c]}</code>
+              </td>
+              <td>{k.columnTexts[c]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        <a class="btn btn-secondary" href={csvHref} download={k.templateFile}>
+          {k.download}
+        </a>
+      </p>
+      <p class="field-hint">{k.capacityNote}</p>
+
+      <h2>{k.previewTitle}</h2>
+      <p>{k.previewIntro}</p>
+
+      <table>
+        <caption>{k.compareCaption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{k.compareRule}</th>
+            <th scope="col" class="num">
+              {k.compareSetup}
+            </th>
+            <th scope="col">{k.compareLate}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scenarios.map((s) => {
+            const late = lateOf(s.schedule);
+            return (
+              <tr>
+                <td>{k.scenarios[s.key]}</td>
+                <td class="num">{two.format(s.schedule.reduce((t, x) => t + x.setup, 0))}</td>
+                <td>{late.length > 0 ? late.join(', ') : k.noneLate}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h3>{k.ganttBefore}</h3>
+      <KitGantt
+        schedule={base}
+        centers={WORK_CENTERS}
+        centerLabels={k.centers}
+        dayLabels={axisDays}
+        hoursPerDay={HORIZON.hoursPerDay}
+        late={new Set(lateOf(base))}
+        label={fmt(k.ganttLabel, { rule: k.scenarios.base })}
+        tip={tip}
+      />
+      <p class="field-hint">{fmt(k.lateMark, { orders: lateOf(base).join(', ') })}</p>
+
+      <h3>{k.ganttAfter}</h3>
+      <KitGantt
+        schedule={after}
+        centers={WORK_CENTERS}
+        centerLabels={k.centers}
+        dayLabels={axisDays}
+        hoursPerDay={HORIZON.hoursPerDay}
+        late={new Set(lateOf(after))}
+        label={fmt(k.ganttLabel, { rule: k.scenarios.both })}
+        tip={tip}
+      />
+
+      <h3>{k.loadTitle}</h3>
+      <svg
+        class="gantt"
+        viewBox={`0 0 ${LOAD_W} ${WORK_CENTERS.length * LOAD_ROW + 6}`}
+        role="img"
+        aria-label={k.loadTitle}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {WORK_CENTERS.map((c, r) => {
+          const h = load.get(c) ?? 0;
+          const y = r * LOAD_ROW + 6;
+          return (
+            <g>
+              <text class="gantt-label" x={0} y={y + 15}>
+                {k.centers[c]}
+              </text>
+              <rect
+                class="load-capacity"
+                x={LOAD_LABEL}
+                y={y}
+                width={loadX(capacity) - LOAD_LABEL}
+                height={20}
+                rx="3"
+              />
+              <rect
+                class="gantt-bar"
+                x={LOAD_LABEL}
+                y={y}
+                width={loadX(h) - LOAD_LABEL}
+                height={20}
+                rx="3"
+              />
+              <text class="gantt-axis" x={loadX(capacity) + 8} y={y + 15}>
+                {fmt(k.loadLine, {
+                  h: one.format(h),
+                  cap: capacity,
+                  pct: pct.format(h / capacity),
+                })}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <blockquote>
+        <p>{fmt(k.lesson, { max: pct.format(maxPct) })}</p>
+      </blockquote>
+
+      <table>
+        <caption>{k.tableCaption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{k.cols.order}</th>
+            <th scope="col" class="num">
+              {k.cols.operation}
+            </th>
+            <th scope="col">{k.cols.center}</th>
+            <th scope="col">{k.cols.start}</th>
+            <th scope="col">{k.cols.end}</th>
+            <th scope="col">{k.cols.due}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...after]
+            .sort((a, b) => a.order.localeCompare(b.order) || a.seq - b.seq)
+            .map((s) => (
+              <tr>
+                <td>{s.order}</td>
+                <td class="num">{s.seq}</td>
+                <td>{k.centers[s.workCenter as keyof typeof k.centers]}</td>
+                <td>{at(s.start, false)}</td>
+                <td>{at(s.end, true)}</td>
+                <td>{dayLabel(slot(s.due, true).date)}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
+      <h2>{k.notTitle}</h2>
+      <ul>
+        <li>{k.not.erp}</li>
+        <li>{k.not.aps}</li>
+        <li>{k.not.decide}</li>
+      </ul>
+
+      <h2>{k.availabilityTitle}</h2>
+      <p>{k.availability}</p>
+    </div>
+  </div>
+</Base>

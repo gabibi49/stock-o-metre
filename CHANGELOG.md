@@ -5,6 +5,7 @@
 ### Ajouté
 
 - Rubrique « Exercices corrigés » (FR/EN) : 10 exercices (stock de sécurité, point de commande, Wilson, ABC, taux de service), au niveau débutant et au niveau certification, avec une correction pas à pas qui s'ouvre au clic, sans script. Une page par exercice, une page d'index avec un tableau par thème et par niveau, et une image de partage.
+- Page « Kit ordonnancement » (FR/EN) : présentation du futur kit Excel (bientôt disponible, sans prix, formulaire ni collecte), description du fichier des OF (une ligne par opération), fichier CSV d'exemple, aperçu calculé au build (deux Gantt, charge par poste, comparaison de règles de séquencement).
 - Test unitaire qui recalcule toutes les corrections avec le moteur du site.
 - Menu : entrée « Exercices » ; « Méthodologie » passe dans le pied de page. Bandeau « Aller plus loin » en bas de l'accueil.
 

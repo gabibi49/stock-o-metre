@@ -13,7 +13,7 @@ test('toutes les pages : CSP, référent, hreflang réciproques, canonical, aucu
   request,
 }) => {
   const paths = await sitemapPaths(request);
-  expect(paths.length).toBe(55); // racine + 17 pages × 2 langues + 10 exercices × 2 langues
+  expect(paths.length).toBe(57); // racine + 18 pages × 2 langues + 10 exercices × 2 langues
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -133,6 +133,7 @@ test.describe('mobile', () => {
     '/stock-o-metre/en/calculators/safety-stock/',
     '/stock-o-metre/fr/methodologie/',
     '/stock-o-metre/fr/exercices/',
+    '/stock-o-metre/fr/kit-ordonnancement/',
     '/stock-o-metre/fr/exercices/classement-abc-xyz-politique/',
   ]) {
     test(`pas de défilement horizontal : ${path}`, async ({ page }) => {
@@ -165,6 +166,33 @@ test('exercices : index, correction repliée puis dépliée, liens', async ({ pa
   await page.locator('a.lang-switch').click();
   await expect(page).toHaveURL(/\/en\/exercises\/safety-stock-beginner\/$/);
   await expect(page.locator('h2', { hasText: 'Solution' })).toBeVisible();
+});
+
+test('kit ordonnancement : présentation seule, fichier CSV, aperçu calculé', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/stock-o-metre/fr/');
+  await page.locator('nav a', { hasText: 'Kit ordonnancement' }).click();
+  await expect(page).toHaveURL(/\/fr\/kit-ordonnancement\/$/);
+  await expect(page.locator('main')).toContainText('Bientôt disponible');
+  // Ni prix, ni formulaire, ni champ de saisie, ni lien externe.
+  await expect(page.locator('main form, main input, main textarea')).toHaveCount(0);
+  await expect(page.locator('main a[href^="http"]')).toHaveCount(0);
+  await expect(page.locator('main')).not.toContainText('€');
+  // Aperçu : deux Gantt et un graphique de charge, calculés au build.
+  await expect(page.locator('svg.gantt')).toHaveCount(3);
+  await expect(page.locator('svg.gantt rect.gantt-late').first()).toBeVisible();
+  await expect(page.locator('main')).toContainText('En rouge : OF en retard (OF-1004).');
+  // Fichier d'exemple : une ligne par opération.
+  const href = (await page
+    .locator('a[download]', { hasText: 'fichier d’exemple' })
+    .getAttribute('href')) as string;
+  const csv = await (await request.get(href)).text();
+  expect(csv.split(/\r\n/).filter(Boolean)).toHaveLength(16);
+  expect(csv).toContain('of;article;quantite;operation;poste');
+  const en = await (await request.get('/stock-o-metre/work-orders-template.csv')).text();
+  expect(en).toContain('work_order,item,quantity,operation,work_center');
 });
 
 test('page 404 bilingue', async ({ page }) => {

@@ -1,0 +1,96 @@
+---
+/**
+ * Diagramme de Gantt statique (SVG calculé au build, aucun script) : une ligne
+ * par poste, une barre par opération. Les couleurs passent par des classes CSS
+ * (pas d'attribut style, pour la CSP). Chaque barre porte une info-bulle native
+ * (<title>) ; le texte « en retard » double la couleur.
+ */
+import type { ScheduledOperation } from '../lib/scheduling';
+
+interface Props {
+  schedule: ScheduledOperation[];
+  centers: readonly string[];
+  centerLabels: Record<string, string>;
+  /** Libellés des jours de l'axe (un par tranche de hoursPerDay). */
+  dayLabels: string[];
+  hoursPerDay: number;
+  late: Set<string>;
+  label: string;
+  /** Info-bulle d'une barre. */
+  tip: (s: ScheduledOperation) => string;
+}
+const { schedule, centers, centerLabels, dayLabels, hoursPerDay, late, label, tip } = Astro.props;
+
+const W = 760;
+const LABEL_W = 118;
+const TOP = 26;
+const ROW = 38;
+const BAR = 24;
+const maxH = dayLabels.length * hoursPerDay;
+const plotW = W - LABEL_W - 8;
+const x = (h: number) => LABEL_W + (h / maxH) * plotW;
+const H = TOP + centers.length * ROW + 4;
+const short = (order: string) => order.replace(/^\D+/, '');
+---
+
+<svg
+  class="gantt"
+  viewBox={`0 0 ${W} ${H}`}
+  role="img"
+  aria-label={label}
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {dayLabels.map((d, i) => (
+    <g>
+      <line
+        class="gantt-grid"
+        x1={x(i * hoursPerDay)}
+        x2={x(i * hoursPerDay)}
+        y1={TOP - 6}
+        y2={H - 4}
+      />
+      <text class="gantt-axis" x={x(i * hoursPerDay + hoursPerDay / 2)} y={14} text-anchor="middle">
+        {d}
+      </text>
+    </g>
+  ))}
+  <line class="gantt-grid" x1={x(maxH)} x2={x(maxH)} y1={TOP - 6} y2={H - 4} />
+  {centers.map((c, r) => (
+    <g>
+      <text class="gantt-label" x={0} y={TOP + r * ROW + ROW / 2 + 4}>
+        {centerLabels[c] ?? c}
+      </text>
+      {schedule
+        .filter((s) => s.workCenter === c)
+        .map((s) => {
+          const bx = x(s.start);
+          const bw = Math.max(1, x(s.end) - x(s.start) - 2);
+          const by = TOP + r * ROW + (ROW - BAR) / 2;
+          const isLate = late.has(s.order);
+          return (
+            <g>
+              <title>{tip(s)}</title>
+              <rect
+                class={isLate ? 'gantt-bar gantt-late' : 'gantt-bar'}
+                x={bx + 1}
+                y={by}
+                width={bw}
+                height={BAR}
+                rx="3"
+              />
+              {bw >= 30 && (
+                <text
+                  class="gantt-bar-text"
+                  x={bx + 1 + bw / 2}
+                  y={by + BAR / 2 + 4}
+                  text-anchor="middle"
+                >
+                  {short(s.order)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+    </g>
+  ))}
+</svg>

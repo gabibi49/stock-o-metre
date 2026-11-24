@@ -38,6 +38,7 @@ export const ROUTES = {
     en: '/en/calculators/days-of-cover/',
   },
   exercises: { fr: '/fr/exercices/', en: '/en/exercises/' },
+  kit: { fr: '/fr/kit-ordonnancement/', en: '/en/production-scheduling-kit/' },
   methodology: { fr: '/fr/methodologie/', en: '/en/methodology/' },
   privacy: { fr: '/fr/confidentialite/', en: '/en/privacy/' },
   legal: { fr: '/fr/mentions-legales/', en: '/en/legal-notice/' },

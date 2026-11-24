@@ -15,6 +15,7 @@ const fr = {
       calculators: 'Calculateurs',
       methodology: 'Méthodologie',
       exercises: 'Exercices',
+      kit: 'Kit ordonnancement',
     },
     langSwitch: {
       label: 'Langue :',
@@ -31,6 +32,7 @@ const fr = {
       guides: 'Guides',
       calculators: 'Calculateurs',
       exercises: 'Exercices corrigés',
+      kit: 'Kit ordonnancement',
       disclaimer:
         'Outil d’aide à la décision fourni sans garantie : vérifiez les résultats avant de modifier vos paramètres de réapprovisionnement.',
     },
@@ -106,6 +108,12 @@ const fr = {
       description:
         'Exercices de gestion des stocks avec énoncé, données et correction pas à pas : stock de sécurité, point de commande, quantité économique de Wilson, classement ABC, taux de service. Niveau débutant et niveau certification.',
       heading: 'Exercices corrigés de supply chain',
+    },
+    kit: {
+      title: 'Kit ordonnancement des OF pour PME industrielle (Excel) : planning, Gantt, charge',
+      description:
+        'Futur classeur Excel de gestion des ordres de fabrication : planning des OF, diagramme de Gantt, charge et capacité par poste, séquencement et priorités. À partir d’un export CSV, une ligne par opération.',
+      heading: 'Kit ordonnancement des ordres de fabrication',
     },
     calcSafety: {
       title: 'Calculateur de stock de sécurité en ligne (formule détaillée)',
@@ -570,6 +578,122 @@ const fr = {
     homeTitle: 'Aller plus loin',
     homeText:
       'Entraînez-vous avec des exercices corrigés pas à pas, du niveau débutant au niveau certification.',
+  },
+
+  kit: {
+    badge: 'Bientôt disponible',
+    lead: 'Un classeur Excel pour planifier les ordres de fabrication d’une PME industrielle : planning des OF, diagramme de Gantt, charge et capacité par poste. Il part d’un simple export CSV de vos OF, comme Stock-o-mètre part de vos mouvements de stock.',
+    problemTitle: 'Pourquoi ce kit',
+    problem:
+      'Dans beaucoup de PME, le planning d’atelier tient dans un fichier Excel construit au fil des années, que seule une personne sait faire vivre. L’ERP gère les commandes et les stocks, mais pas l’arbitrage fin entre postes, réglages et urgences. Les logiciels d’ordonnancement (APS) sont souvent trop lourds pour un atelier de quelques postes.',
+    principleTitle: 'Le principe : le même que pour vos stocks',
+    principle: {
+      export:
+        'Exportez vos OF depuis votre ERP ou votre fichier actuel, au format CSV, avec une ligne par opération.',
+      compute:
+        'Le kit place chaque opération sur son poste, dans l’ordre de la gamme, sans dépasser la capacité, et calcule la date de fin de chaque OF.',
+      adjust:
+        'Vous changez les priorités à la main quand le terrain l’impose : le planning et la charge se recalculent.',
+    },
+    featuresTitle: 'Ce que contiendra le kit',
+    features: {
+      planning: 'Planning des OF',
+      gantt: 'Diagramme de Gantt',
+      load: 'Charge et capacité par poste',
+      sequencing: 'Séquencement avec ou sans changements de série',
+      priorities: 'Modification manuelle des priorités',
+    },
+    featureTexts: {
+      planning:
+        'Date de début et de fin de chaque opération et de chaque OF, comparée à la date due.',
+      gantt:
+        'Une ligne par poste, pour voir d’un coup d’œil l’enchaînement des opérations et les retards.',
+      load: 'Heures à produire comparées aux heures disponibles, pour repérer les goulots.',
+      sequencing:
+        'Ordre de passage selon la priorité et la date due, avec en option le regroupement des opérations de même famille de réglage pour réduire les changements de série.',
+      priorities: 'Le planificateur garde la main : il remonte un OF urgent, et le calcul suit.',
+    },
+    fileTitle: 'Le fichier des OF',
+    fileIntro:
+      'Une ligne par opération : un OF qui passe sur trois postes occupe trois lignes. Les noms de colonnes de votre ERP pourront être associés à ceux du kit.',
+    columnHead: 'Colonne',
+    meaningHead: 'Contenu',
+    columns: {
+      order: 'of',
+      item: 'article',
+      quantity: 'quantite',
+      operation: 'operation',
+      workCenter: 'poste',
+      setup: 'temps_reglage_h',
+      unit: 'temps_unitaire_h',
+      family: 'famille_reglage',
+      earliest: 'debut_au_plus_tot',
+      due: 'date_due',
+      priority: 'priorite',
+      status: 'statut',
+    },
+    columnTexts: {
+      order: 'Numéro de l’ordre de fabrication.',
+      item: 'Référence fabriquée.',
+      quantity: 'Quantité à produire.',
+      operation: 'Numéro d’opération (10, 20, 30…) : ordre de passage dans la gamme.',
+      workCenter: 'Poste de charge ou machine.',
+      setup: 'Temps de réglage de l’opération, en heures.',
+      unit: 'Temps par pièce, en heures.',
+      family:
+        'Famille de réglage : deux opérations de même famille enchaînées sur un poste évitent un réglage.',
+      earliest: 'Date à partir de laquelle l’opération peut démarrer (matière disponible).',
+      due: 'Date à laquelle l’OF doit être terminé.',
+      priority: '1 = la plus urgente.',
+      status: 'Lancé ou Planifié.',
+    },
+    download: 'Télécharger le fichier d’exemple (CSV)',
+    templateFile: 'modele-of.csv',
+    capacityNote:
+      'La capacité des postes (heures par jour) et le calendrier de travail se renseignent dans le kit, pas dans ce fichier.',
+    previewTitle: 'Aperçu sur le fichier d’exemple',
+    previewIntro:
+      'Ce planning est calculé à partir du fichier d’exemple : 6 OF, 3 postes, une semaine de 5 jours de 8 heures. Il illustre le principe ; ce n’est pas le kit lui-même.',
+    centers: { DEC: 'Découpe laser', PLI: 'Pliage', SOU: 'Soudure' },
+    scenarios: {
+      base: 'Priorité puis date due, un réglage à chaque opération',
+      grouped: 'Réglages regroupés par famille',
+      priority: 'OF-1004 passé en priorité 1',
+      both: 'OF-1004 en priorité 1 et réglages regroupés',
+    },
+    compareCaption: 'Effet des règles de séquencement sur le fichier d’exemple',
+    compareRule: 'Règle',
+    compareSetup: 'Heures de réglage',
+    compareLate: 'OF en retard',
+    noneLate: 'aucun',
+    ganttBefore: 'Avant : règle de base',
+    ganttAfter: 'Après : OF-1004 en priorité 1 et réglages regroupés',
+    ganttLabel: 'Diagramme de Gantt, {rule}. Le détail figure dans les tableaux de la page.',
+    lateMark: 'En rouge : OF en retard ({orders}).',
+    loadTitle: 'Charge et capacité par poste (règle de base)',
+    loadLine: '{h} h sur {cap} h ({pct})',
+    lesson:
+      'Aucun poste n’est chargé à plus de {max} de sa capacité, et pourtant un OF finit en retard : la charge globale ne suffit pas, c’est l’ordre de passage qui fait le délai. Remonter la priorité de l’OF en retard ne suffit pas non plus : un autre OF passe en retard. En regroupant aussi les réglages, tous les OF sont à l’heure.',
+    tableCaption: 'Planning détaillé après ajustement',
+    cols: {
+      order: 'OF',
+      operation: 'Op.',
+      center: 'Poste',
+      start: 'Début',
+      end: 'Fin',
+      due: 'Date due',
+    },
+    notTitle: 'Ce que le kit ne cherche pas à faire',
+    not: {
+      erp: 'Remplacer votre ERP : il lit un export et n’écrit rien dans vos systèmes.',
+      aps: 'Remplacer un logiciel d’ordonnancement (APS) : il vise les ateliers de quelques postes, avec des règles simples et visibles.',
+      decide: 'Décider à votre place : il propose un ordre de passage, le planificateur tranche.',
+    },
+    availabilityTitle: 'Disponibilité',
+    availability:
+      'Le kit est en préparation. Il n’y a ni inscription ni liste d’attente : revenez simplement sur cette page.',
+    homeText:
+      'Un futur classeur Excel pour planifier vos ordres de fabrication : planning, Gantt, charge des postes. Bientôt disponible.',
   },
 
   notFound: {

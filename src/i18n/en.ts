@@ -13,6 +13,7 @@ const en: Dict = {
       calculators: 'Calculators',
       methodology: 'Methodology',
       exercises: 'Exercises',
+      kit: 'Scheduling kit',
     },
     langSwitch: {
       label: 'Language:',
@@ -29,6 +30,7 @@ const en: Dict = {
       guides: 'Guides',
       calculators: 'Calculators',
       exercises: 'Worked exercises',
+      kit: 'Scheduling kit',
       disclaimer:
         'Decision-support tool provided without warranty: review the results before changing your replenishment settings.',
     },
@@ -104,6 +106,12 @@ const en: Dict = {
       description:
         'Inventory management exercises with problem, data and step-by-step solution: safety stock, reorder point, economic order quantity, ABC analysis and service level. Beginner and certification level.',
       heading: 'Supply chain exercises with worked solutions',
+    },
+    kit: {
+      title: 'Work Order Scheduling Kit for Small Manufacturers (Excel): Schedule, Gantt, Load',
+      description:
+        'Upcoming Excel workbook to manage work orders: schedule, Gantt chart, load and capacity by work centre, sequencing and priorities. Built from a CSV export, one row per operation.',
+      heading: 'Work order scheduling kit',
     },
     calcSafety: {
       title: 'Safety Stock Calculator (Formula Shown Step by Step)',
@@ -556,6 +564,121 @@ const en: Dict = {
       'Original exercises written for Stock-o-mètre, not affiliated with ASCM / APICS. Calculation conventions are those of the Methodology page.',
     homeTitle: 'Going further',
     homeText: 'Practise with step-by-step worked exercises, from beginner to certification level.',
+  },
+
+  kit: {
+    badge: 'Coming soon',
+    lead: 'An Excel workbook to schedule work orders in a small manufacturing company: work order schedule, Gantt chart, load and capacity by work centre. It starts from a plain CSV export of your work orders, just as Stock-o-mètre starts from your stock movements.',
+    problemTitle: 'Why this kit',
+    problem:
+      'In many small manufacturers, the shop floor schedule lives in an Excel file built up over the years that only one person knows how to run. The ERP handles orders and stock, but not the fine trade-offs between work centres, set-ups and rush orders. Advanced planning and scheduling (APS) software is often too heavy for a shop with a handful of work centres.',
+    principleTitle: 'The idea: the same as for your inventory',
+    principle: {
+      export:
+        'Export your work orders from your ERP or your current file as CSV, with one row per operation.',
+      compute:
+        'The kit places each operation on its work centre, in routing order, without exceeding capacity, and calculates the finish date of each work order.',
+      adjust:
+        'You change priorities by hand when the shop floor demands it: the schedule and the load are recalculated.',
+    },
+    featuresTitle: 'What the kit will include',
+    features: {
+      planning: 'Work order schedule',
+      gantt: 'Gantt chart',
+      load: 'Load and capacity by work centre',
+      sequencing: 'Sequencing with or without changeovers',
+      priorities: 'Manual priority changes',
+    },
+    featureTexts: {
+      planning:
+        'Start and finish of each operation and each work order, compared with the due date.',
+      gantt: 'One row per work centre, to see the flow of operations and any delays at a glance.',
+      load: 'Hours to produce compared with hours available, to spot bottlenecks.',
+      sequencing:
+        'Sequence by priority and due date, with an option to group operations of the same set-up family to cut changeovers.',
+      priorities: 'The planner stays in control: move a rush order up, and the schedule follows.',
+    },
+    fileTitle: 'The work order file',
+    fileIntro:
+      'One row per operation: a work order that visits three work centres takes three rows. Your ERP column names can be mapped to the kit’s.',
+    columnHead: 'Column',
+    meaningHead: 'Content',
+    columns: {
+      order: 'work_order',
+      item: 'item',
+      quantity: 'quantity',
+      operation: 'operation',
+      workCenter: 'work_center',
+      setup: 'setup_time_h',
+      unit: 'unit_time_h',
+      family: 'setup_family',
+      earliest: 'earliest_start',
+      due: 'due_date',
+      priority: 'priority',
+      status: 'status',
+    },
+    columnTexts: {
+      order: 'Work order number.',
+      item: 'Item produced.',
+      quantity: 'Quantity to produce.',
+      operation: 'Operation number (10, 20, 30…): sequence in the routing.',
+      workCenter: 'Work centre or machine.',
+      setup: 'Set-up time of the operation, in hours.',
+      unit: 'Run time per piece, in hours.',
+      family:
+        'Set-up family: two operations of the same family run back to back on a work centre save a set-up.',
+      earliest: 'Date from which the operation can start (material available).',
+      due: 'Date by which the work order must be finished.',
+      priority: '1 = most urgent.',
+      status: 'Released or Planned.',
+    },
+    download: 'Download the example file (CSV)',
+    templateFile: 'work-orders-template.csv',
+    capacityNote:
+      'Work centre capacity (hours per day) and the working calendar are entered in the kit, not in this file.',
+    previewTitle: 'Preview on the example file',
+    previewIntro:
+      'This schedule is calculated from the example file: 6 work orders, 3 work centres, one week of 5 eight-hour days. It illustrates the idea; it is not the kit itself.',
+    centers: { DEC: 'Laser cutting', PLI: 'Bending', SOU: 'Welding' },
+    scenarios: {
+      base: 'Priority then due date, one set-up per operation',
+      grouped: 'Set-ups grouped by family',
+      priority: 'OF-1004 raised to priority 1',
+      both: 'OF-1004 at priority 1 and set-ups grouped',
+    },
+    compareCaption: 'Effect of sequencing rules on the example file',
+    compareRule: 'Rule',
+    compareSetup: 'Set-up hours',
+    compareLate: 'Late work orders',
+    noneLate: 'none',
+    ganttBefore: 'Before: basic rule',
+    ganttAfter: 'After: OF-1004 at priority 1 and set-ups grouped',
+    ganttLabel: 'Gantt chart, {rule}. Details are in the tables on this page.',
+    lateMark: 'In red: late work orders ({orders}).',
+    loadTitle: 'Load and capacity by work centre (basic rule)',
+    loadLine: '{h} h of {cap} h ({pct})',
+    lesson:
+      'No work centre is loaded above {max} of its capacity, yet one work order finishes late: overall load is not enough, sequence drives lead time. Raising the priority of the late order is not enough either: another order becomes late. Grouping set-ups as well brings every order in on time.',
+    tableCaption: 'Detailed schedule after adjustment',
+    cols: {
+      order: 'WO',
+      operation: 'Op.',
+      center: 'Work centre',
+      start: 'Start',
+      end: 'Finish',
+      due: 'Due',
+    },
+    notTitle: 'What the kit does not try to do',
+    not: {
+      erp: 'Replace your ERP: it reads an export and writes nothing into your systems.',
+      aps: 'Replace scheduling software (APS): it targets shops with a few work centres, with simple, visible rules.',
+      decide: 'Decide for you: it proposes a sequence, the planner makes the call.',
+    },
+    availabilityTitle: 'Availability',
+    availability:
+      'The kit is in preparation. There is no sign-up and no waiting list: just come back to this page.',
+    homeText:
+      'An upcoming Excel workbook to schedule your work orders: schedule, Gantt chart, work centre load. Coming soon.',
   },
 
   notFound: {
