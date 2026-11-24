@@ -1088,3 +1088,65 @@ details.explain summary {
   height: 10px;
   border-radius: 50%;
 }
+
+/* ---------- Exercices corrigés ---------- */
+.level-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  margin-right: 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+.level-badge.level-certification {
+  border-color: var(--over);
+  color: var(--over);
+  background: var(--over-bg);
+}
+.exercise-matrix {
+  margin: 16px 0 8px;
+}
+.exercise-matrix td a {
+  display: block;
+}
+.exercise-matrix td a + a {
+  margin-top: 4px;
+}
+.content details.step {
+  margin: 10px 0;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.content details.step > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+.content details.step > summary:hover {
+  background: var(--accent-soft);
+}
+.content details.step[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+.content details.step > :not(summary) {
+  margin-left: 14px;
+  margin-right: 14px;
+}
+.exercise-links {
+  display: block;
+}
+.exercise-links h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+.exercise-links ul {
+  padding-left: 1.2em;
+}
+.further {
+  margin-top: 24px;
+}

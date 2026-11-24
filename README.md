@@ -74,4 +74,13 @@ src/content/     guides et pages de contenu (Markdown)
 tests/           tests unitaires, tests e2e, jeux de données
 ```
 
+## Ajouter un exercice corrigé
+
+1. Copier un fichier de `src/content/exercises/fr/` et son équivalent dans `src/content/exercises/en/`. Les deux versions gardent le même `id`.
+2. Remplir l'en-tête : `slug` (fin de l'URL, dans la langue du fichier), `title`, `description`, `theme`, `level` (`beginner` ou `certification`), `minutes`, et si besoin `calc`, `guide`, `tool: true`.
+3. Écrire l'énoncé et les données, puis un titre `## Correction` (FR) ou `## Solution` (EN). Chaque titre `###` placé ensuite devient une étape repliée, qui s'ouvre au clic.
+4. Ajouter le recalcul des résultats dans `tests/unit/exercises.test.ts`, puis lancer `npm run verify`.
+
+La page, le menu, le sitemap, l'image de partage et le lien vers l'autre langue sont créés automatiquement. Pour un nouveau thème, l'ajouter dans `src/lib/exercise-meta.ts` et son libellé dans `src/i18n/fr.ts` et `en.ts`.
+
 Voir aussi `DECISIONS.md` (choix techniques) et `CHANGELOG.md`.

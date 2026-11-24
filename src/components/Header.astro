@@ -6,11 +6,12 @@ import { otherLang, pathTo, type Lang, type RouteKey } from '../i18n/routes';
 interface Props {
   lang: Lang;
   routeKey?: RouteKey | undefined;
+  switchHref?: string | undefined;
 }
-const { lang, routeKey } = Astro.props;
+const { lang, routeKey, switchHref: switchOverride } = Astro.props;
 const t = dict(lang);
 const other = otherLang(lang);
-const switchHref = pathTo(routeKey ?? 'home', other);
+const switchHref = switchOverride ?? pathTo(routeKey ?? 'home', other);
 
 const section = (keys: string[]): boolean =>
   routeKey !== undefined && keys.some((k) => routeKey.startsWith(k));
@@ -23,9 +24,9 @@ const nav = [
     current: section(['calc']),
   },
   {
-    href: pathTo('methodology', lang),
-    label: t.common.nav.methodology,
-    current: routeKey === 'methodology',
+    href: pathTo('exercises', lang),
+    label: t.common.nav.exercises,
+    current: routeKey === 'exercises',
   },
 ];
 ---

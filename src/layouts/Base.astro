@@ -31,6 +31,10 @@ interface Props {
   canonical?: string;
   bodyClass?: string;
   showChrome?: boolean;
+  /** Page hors table (exercice) : rubrique du menu à mettre en évidence. */
+  navKey?: RouteKey;
+  /** Page hors table (exercice) : lien du sélecteur de langue. */
+  switchHref?: string;
 }
 
 const {
@@ -47,6 +51,8 @@ const {
   canonical,
   bodyClass,
   showChrome = true,
+  navKey,
+  switchHref,
 } = Astro.props;
 const t = dict(lang);
 
@@ -130,7 +136,7 @@ const isProd = import.meta.env.PROD;
     <a class="skip-link" href="#main">
       {t.common.skip}
     </a>
-    {showChrome && <Header lang={lang} routeKey={routeKey} />}
+    {showChrome && <Header lang={lang} routeKey={navKey ?? routeKey} switchHref={switchHref} />}
     <main id="main" tabindex="-1">
       {fullCrumbs.length > 0 && <Breadcrumb lang={lang} crumbs={fullCrumbs} />}
       <slot />

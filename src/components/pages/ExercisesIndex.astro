@@ -1,0 +1,108 @@
+---
+import Base from '../../layouts/Base.astro';
+import { dict, fmt } from '../../i18n';
+import { absoluteUrl, pathTo, type Lang } from '../../i18n/routes';
+import { EXERCISE_LEVELS, EXERCISE_THEMES } from '../../lib/exercise-meta';
+import { exercisePages } from '../../lib/exercises';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = dict(lang);
+const m = d.meta.exercises;
+const x = d.exercises;
+const pages = (await exercisePages()).filter((p) => p.lang === lang);
+const cell = (theme: string, level: string) =>
+  pages.filter((p) => p.entry.data.theme === theme && p.entry.data.level === level);
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: m.heading,
+    itemListElement: pages.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.entry.data.title,
+      url: absoluteUrl(p.paths[lang]),
+    })),
+  },
+];
+---
+
+<Base
+  lang={lang}
+  routeKey="exercises"
+  title={m.title}
+  description={m.description}
+  jsonLd={jsonLd}
+  crumbs={[{ label: d.common.nav.exercises, href: pathTo('exercises', lang) }]}
+>
+  <div class="container">
+    <header class="page-head">
+      <h1>{m.heading}</h1>
+      <p class="lead">{x.intro}</p>
+    </header>
+
+    <div class="table-wrap exercise-matrix">
+      <table>
+        <caption>{x.matrixCaption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{x.theme}</th>
+            {EXERCISE_LEVELS.map((l) => (
+              <th scope="col">{x.levels[l]}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {EXERCISE_THEMES.map((t) => (
+            <tr>
+              <th scope="row">{x.themes[t]}</th>
+              {EXERCISE_LEVELS.map((l) => (
+                <td>
+                  {cell(t, l).map((p) => (
+                    <a href={p.paths[lang]}>{p.entry.data.title}</a>
+                  ))}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {EXERCISE_LEVELS.map((l) => (
+      <section aria-labelledby={`level-${l}`}>
+        <h2 id={`level-${l}`}>{x.levels[l]}</h2>
+        <p class="field-hint">{x.levelHints[l]}</p>
+        <ul class="card-grid">
+          {pages
+            .filter((p) => p.entry.data.level === l)
+            .map((p) => (
+              <li>
+                <article class="card">
+                  <p class="meta-line">
+                    {x.themes[p.entry.data.theme]} ·{' '}
+                    {fmt(x.duration, { min: p.entry.data.minutes })}
+                  </p>
+                  <h3>
+                    <a href={p.paths[lang]}>{p.entry.data.title}</a>
+                  </h3>
+                  <p>{p.entry.data.description}</p>
+                </article>
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))}
+
+    <p class="field-hint">{x.disclaimer}</p>
+    <div class="cta">
+      <p>{d.tool.promise}</p>
+      <a class="btn" href={pathTo('home', lang)}>
+        {d.common.toTool}
+      </a>
+    </div>
+  </div>
+</Base>

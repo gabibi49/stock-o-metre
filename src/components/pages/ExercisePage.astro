@@ -1,0 +1,110 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { dict, fmt } from '../../i18n';
+import { absoluteUrl, asset, BASE, otherLang, pathTo, type Lang } from '../../i18n/routes';
+import { exercisePages, type ExercisePage } from '../../lib/exercises';
+
+interface Props {
+  page: ExercisePage;
+}
+const { page } = Astro.props;
+const lang: Lang = page.lang;
+const data = page.entry.data;
+const d = dict(lang);
+const x = d.exercises;
+const { Content } = await render(page.entry);
+const url = absoluteUrl(page.paths[lang]);
+const siblings = (await exercisePages()).filter(
+  (p) =>
+    p.lang === lang &&
+    p.id !== page.id &&
+    p.entry.data.theme === data.theme &&
+    p.entry.data.level !== data.level,
+);
+const title = `${data.title} | ${d.common.nav.exercises} | ${d.common.siteName}`;
+const ogImage = `og/${lang}/ex-${page.id}.png`;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'LearningResource',
+    name: data.title,
+    description: data.description,
+    inLanguage: lang,
+    learningResourceType: 'Exercise',
+    educationalLevel: x.levels[data.level],
+    teaches: x.themes[data.theme],
+    timeRequired: `PT${data.minutes}M`,
+    isAccessibleForFree: true,
+    datePublished: data.published,
+    dateModified: data.updated,
+    url,
+    image: absoluteUrl(asset(ogImage)),
+  },
+];
+---
+
+<Base
+  lang={lang}
+  title={title}
+  description={data.description}
+  ogType="article"
+  ogImage={ogImage}
+  jsonLd={jsonLd}
+  canonical={url}
+  alternates={[
+    { hreflang: 'fr', href: absoluteUrl(page.paths.fr) },
+    { hreflang: 'en', href: absoluteUrl(page.paths.en) },
+    { hreflang: 'x-default', href: absoluteUrl(`${BASE}/`) },
+  ]}
+  navKey="exercises"
+  switchHref={page.paths[otherLang(lang)]}
+  crumbs={[
+    { label: d.common.nav.exercises, href: pathTo('exercises', lang) },
+    { label: data.title, href: page.paths[lang] },
+  ]}
+>
+  <article class="container container-narrow exercise">
+    <header class="page-head">
+      <p class="meta-line">
+        <span class={`level-badge level-${data.level}`}>{x.levels[data.level]}</span>
+        {x.themes[data.theme]} · {fmt(x.duration, { min: data.minutes })}
+      </p>
+      <h1>{data.title}</h1>
+      <p class="lead">{data.description}</p>
+    </header>
+    <p class="notice">{x.stepsHint}</p>
+    <div class="content">
+      <Content />
+    </div>
+    <aside class="cta exercise-links" aria-labelledby="links-title">
+      <h2 id="links-title">{x.links}</h2>
+      <ul>
+        {data.calc && (
+          <li>
+            {d.common.relatedCalc} <a href={pathTo(data.calc, lang)}>{d.meta[data.calc].heading}</a>
+          </li>
+        )}
+        {data.guide && (
+          <li>
+            {d.common.relatedGuide}{' '}
+            <a href={pathTo(data.guide, lang)}>{d.meta[data.guide].heading}</a>
+          </li>
+        )}
+        {siblings.map((s) => (
+          <li>
+            {x.sameTheme} <a href={s.paths[lang]}>{s.entry.data.title}</a>
+          </li>
+        ))}
+        <li>
+          <a href={pathTo('exercises', lang)}>{x.all}</a>
+        </li>
+      </ul>
+      {data.tool && (
+        <a class="btn" href={pathTo('home', lang)}>
+          {x.openTool}
+        </a>
+      )}
+    </aside>
+  </article>
+</Base>

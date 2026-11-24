@@ -37,6 +37,7 @@ export const ROUTES = {
     fr: '/fr/calculateurs/couverture-de-stock/',
     en: '/en/calculators/days-of-cover/',
   },
+  exercises: { fr: '/fr/exercices/', en: '/en/exercises/' },
   methodology: { fr: '/fr/methodologie/', en: '/en/methodology/' },
   privacy: { fr: '/fr/confidentialite/', en: '/en/privacy/' },
   legal: { fr: '/fr/mentions-legales/', en: '/en/legal-notice/' },

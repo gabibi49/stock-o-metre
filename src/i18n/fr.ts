@@ -14,6 +14,7 @@ const fr = {
       guides: 'Guides',
       calculators: 'Calculateurs',
       methodology: 'Méthodologie',
+      exercises: 'Exercices',
     },
     langSwitch: {
       label: 'Langue :',
@@ -29,6 +30,7 @@ const fr = {
       methodology: 'Méthodologie',
       guides: 'Guides',
       calculators: 'Calculateurs',
+      exercises: 'Exercices corrigés',
       disclaimer:
         'Outil d’aide à la décision fourni sans garantie : vérifiez les résultats avant de modifier vos paramètres de réapprovisionnement.',
     },
@@ -98,6 +100,12 @@ const fr = {
       description:
         'Quatre mini-calculateurs sans fichier : stock de sécurité, point de commande, stock cible et couverture de stock en jours. Formule détaillée avec vos valeurs.',
       heading: 'Mini-calculateurs de stock',
+    },
+    exercises: {
+      title: 'Exercices corrigés de supply chain : stock de sécurité, Wilson, ABC, taux de service',
+      description:
+        'Exercices de gestion des stocks avec énoncé, données et correction pas à pas : stock de sécurité, point de commande, quantité économique de Wilson, classement ABC, taux de service. Niveau débutant et niveau certification.',
+      heading: 'Exercices corrigés de supply chain',
     },
     calcSafety: {
       title: 'Calculateur de stock de sécurité en ligne (formule détaillée)',
@@ -529,6 +537,39 @@ const fr = {
       'Des guides concrets, avec exemples chiffrés, pour paramétrer vos stocks sans y passer vos week-ends. Chaque guide renvoie vers le calculateur correspondant.',
     summary: 'En bref',
     hypotheses: 'Hypothèses',
+  },
+
+  exercises: {
+    intro:
+      'Chaque exercice comporte un énoncé, des données et une correction pas à pas. Cherchez d’abord par vous-même, puis dépliez les étapes une à une pour vérifier votre raisonnement.',
+    levels: { beginner: 'Débutant', certification: 'Niveau certification' },
+    levelHints: {
+      beginner: 'Une formule à la fois, des données courtes : pour découvrir ou réviser les bases.',
+      certification:
+        'Plusieurs notions combinées et une décision à justifier, dans l’esprit des certifications professionnelles en supply chain (type APICS CPIM).',
+    },
+    themes: {
+      safety: 'Stock de sécurité',
+      rop: 'Point de commande',
+      eoq: 'Quantité économique (Wilson)',
+      abc: 'Classement ABC',
+      service: 'Taux de service',
+    },
+    matrixCaption: 'Exercices par thème et par niveau',
+    theme: 'Thème',
+    level: 'Niveau',
+    duration: 'Durée indicative : {min} min',
+    stepsHint:
+      'Cliquez sur une étape pour afficher sa correction. Essayez d’abord de la faire seul.',
+    links: 'Pour aller plus loin',
+    openTool: 'Analyser tous vos articles avec l’outil',
+    sameTheme: 'Même thème, autre niveau :',
+    all: 'Tous les exercices',
+    disclaimer:
+      'Exercices originaux rédigés pour Stock-o-mètre, sans lien avec l’ASCM / APICS. Les conventions de calcul sont celles de la page Méthodologie.',
+    homeTitle: 'Aller plus loin',
+    homeText:
+      'Entraînez-vous avec des exercices corrigés pas à pas, du niveau débutant au niveau certification.',
   },
 
   notFound: {

@@ -1,5 +1,13 @@
 # Changelog
 
+## [Non publié]
+
+### Ajouté
+
+- Rubrique « Exercices corrigés » (FR/EN) : 10 exercices (stock de sécurité, point de commande, Wilson, ABC, taux de service), au niveau débutant et au niveau certification, avec une correction pas à pas qui s'ouvre au clic, sans script. Une page par exercice, une page d'index avec un tableau par thème et par niveau, et une image de partage.
+- Test unitaire qui recalcule toutes les corrections avec le moteur du site.
+- Menu : entrée « Exercices » ; « Méthodologie » passe dans le pied de page. Bandeau « Aller plus loin » en bas de l'accueil.
+
 ## [1.0.0] — 2026-11-20
 
 ### Ajouté

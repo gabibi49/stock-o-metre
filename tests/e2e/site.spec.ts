@@ -13,7 +13,7 @@ test('toutes les pages : CSP, référent, hreflang réciproques, canonical, aucu
   request,
 }) => {
   const paths = await sitemapPaths(request);
-  expect(paths.length).toBe(33); // racine + 16 pages × 2 langues
+  expect(paths.length).toBe(55); // racine + 17 pages × 2 langues + 10 exercices × 2 langues
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -132,6 +132,8 @@ test.describe('mobile', () => {
     '/stock-o-metre/fr/guides/calcul-stock-de-securite/',
     '/stock-o-metre/en/calculators/safety-stock/',
     '/stock-o-metre/fr/methodologie/',
+    '/stock-o-metre/fr/exercices/',
+    '/stock-o-metre/fr/exercices/classement-abc-xyz-politique/',
   ]) {
     test(`pas de défilement horizontal : ${path}`, async ({ page }) => {
       await page.goto(path);
@@ -141,6 +143,28 @@ test.describe('mobile', () => {
       expect(overflow).toBeLessThanOrEqual(0);
     });
   }
+});
+
+test('exercices : index, correction repliée puis dépliée, liens', async ({ page }) => {
+  await page.goto('/stock-o-metre/fr/exercices/');
+  await expect(page.locator('.exercise-matrix a')).toHaveCount(10);
+  await page.locator('a', { hasText: 'Calculer un stock de sécurité' }).first().click();
+  await expect(page).toHaveURL(/\/fr\/exercices\/stock-de-securite-debutant\/$/);
+  await expect(page.locator('nav a[aria-current="page"]')).toHaveText('Exercices');
+  const steps = page.locator('details.step');
+  await expect(steps).toHaveCount(6);
+  const answer = page.locator('details.step', { hasText: 'Stock de sécurité à 95 %' });
+  await expect(answer.locator('pre')).toBeHidden();
+  await answer.locator('summary').click();
+  await expect(answer.locator('pre')).toBeVisible();
+  await expect(answer.locator('pre')).toContainText('69,79 → 70 unités');
+  await expect(
+    page.locator('.exercise-links a[href$="/fr/calculateurs/stock-de-securite/"]'),
+  ).toBeVisible();
+  // Le sélecteur de langue mène au même exercice en anglais.
+  await page.locator('a.lang-switch').click();
+  await expect(page).toHaveURL(/\/en\/exercises\/safety-stock-beginner\/$/);
+  await expect(page.locator('h2', { hasText: 'Solution' })).toBeVisible();
 });
 
 test('page 404 bilingue', async ({ page }) => {

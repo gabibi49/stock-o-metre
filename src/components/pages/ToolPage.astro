@@ -475,6 +475,20 @@ const chartIds = [
         <span id="share-status" role="status" aria-live="polite"></span>
       </div>
     </section>
+
+    <section class="tool-section further" aria-labelledby="further-title">
+      <h2 id="further-title">{d.exercises.homeTitle}</h2>
+      <ul class="card-grid">
+        <li>
+          <article class="card">
+            <h3>
+              <a href={pathTo('exercises', lang)}>{d.meta.exercises.heading}</a>
+            </h3>
+            <p>{d.exercises.homeText}</p>
+          </article>
+        </li>
+      </ul>
+    </section>
   </div>
   <script type="application/json" id="tool-config" is:inline set:html={configJson} />
 </Base>

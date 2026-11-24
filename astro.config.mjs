@@ -35,11 +35,55 @@ function rehypeLinks() {
   return (/** @type {any} */ tree) => visit(tree);
 }
 
+/**
+ * Plugin rehype pour les exercices corrigés (src/content/exercises) : après le
+ * titre de niveau 2 « Correction » (FR) ou « Solution » (EN), chaque titre de
+ * niveau 3 et le contenu qui le suit deviennent un bloc <details> replié,
+ * déplié au clic. Aucun script : compatible avec la CSP stricte.
+ */
+function rehypeExerciseSteps() {
+  /** @param {any} node */
+  const text = (node) =>
+    node.type === 'text' ? node.value : (node.children ?? []).map(text).join('');
+  return (/** @type {any} */ tree, /** @type {any} */ file) => {
+    const path = String(file?.path ?? file?.history?.[0] ?? '').replace(/\\/g, '/');
+    if (!path.includes('/content/exercises/')) return;
+    /** @type {any[]} */
+    const out = [];
+    let inSolution = false;
+    /** @type {any} */
+    let step = null;
+    for (const node of tree.children) {
+      const isEl = node.type === 'element';
+      if (isEl && node.tagName === 'h2') {
+        step = null;
+        inSolution = /^(correction|solution)\b/i.test(text(node).trim());
+        out.push(node);
+      } else if (inSolution && isEl && node.tagName === 'h3') {
+        step = {
+          type: 'element',
+          tagName: 'details',
+          properties: { className: ['step'] },
+          children: [
+            { type: 'element', tagName: 'summary', properties: {}, children: node.children },
+          ],
+        };
+        out.push(step);
+      } else if (step) {
+        step.children.push(node);
+      } else {
+        out.push(node);
+      }
+    }
+    tree.children = out;
+  };
+}
+
 export default defineConfig({
   site: SITE,
   base: BASE,
   markdown: {
-    rehypePlugins: [rehypeLinks],
+    rehypePlugins: [rehypeLinks, rehypeExerciseSteps],
     smartypants: false,
     // Pas de coloration syntaxique : Shiki insère des attributs style="…"
     // que la CSP (style-src 'self', sans 'unsafe-inline') bloquerait.

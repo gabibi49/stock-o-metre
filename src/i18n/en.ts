@@ -12,6 +12,7 @@ const en: Dict = {
       guides: 'Guides',
       calculators: 'Calculators',
       methodology: 'Methodology',
+      exercises: 'Exercises',
     },
     langSwitch: {
       label: 'Language:',
@@ -27,6 +28,7 @@ const en: Dict = {
       methodology: 'Methodology',
       guides: 'Guides',
       calculators: 'Calculators',
+      exercises: 'Worked exercises',
       disclaimer:
         'Decision-support tool provided without warranty: review the results before changing your replenishment settings.',
     },
@@ -96,6 +98,12 @@ const en: Dict = {
       description:
         'Four calculators, no file needed: safety stock, reorder point, order-up-to level and days of inventory cover. Formula shown with your values.',
       heading: 'Inventory calculators',
+    },
+    exercises: {
+      title: 'Supply Chain Exercises with Solutions: Safety Stock, EOQ, ABC, Service Level',
+      description:
+        'Inventory management exercises with problem, data and step-by-step solution: safety stock, reorder point, economic order quantity, ABC analysis and service level. Beginner and certification level.',
+      heading: 'Supply chain exercises with worked solutions',
     },
     calcSafety: {
       title: 'Safety Stock Calculator (Formula Shown Step by Step)',
@@ -517,6 +525,37 @@ const en: Dict = {
       'Practical guides with worked examples to set up your inventory parameters with confidence. Each guide links to the matching calculator.',
     summary: 'In short',
     hypotheses: 'Assumptions',
+  },
+
+  exercises: {
+    intro:
+      'Each exercise comes with a problem statement, data and a step-by-step solution. Work it out first, then open the steps one at a time to check your reasoning.',
+    levels: { beginner: 'Beginner', certification: 'Certification level' },
+    levelHints: {
+      beginner: 'One formula at a time and short data sets: to learn or revise the basics.',
+      certification:
+        'Several concepts combined and a decision to justify, in the spirit of professional supply chain certifications (such as APICS CPIM).',
+    },
+    themes: {
+      safety: 'Safety stock',
+      rop: 'Reorder point',
+      eoq: 'Economic order quantity',
+      abc: 'ABC analysis',
+      service: 'Service level',
+    },
+    matrixCaption: 'Exercises by topic and level',
+    theme: 'Topic',
+    level: 'Level',
+    duration: 'Estimated time: {min} min',
+    stepsHint: 'Click a step to reveal its solution. Try it on your own first.',
+    links: 'Going further',
+    openTool: 'Analyse all your items with the tool',
+    sameTheme: 'Same topic, other level:',
+    all: 'All exercises',
+    disclaimer:
+      'Original exercises written for Stock-o-mètre, not affiliated with ASCM / APICS. Calculation conventions are those of the Methodology page.',
+    homeTitle: 'Going further',
+    homeText: 'Practise with step-by-step worked exercises, from beginner to certification level.',
   },
 
   notFound: {

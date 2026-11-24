@@ -1,7 +1,8 @@
 ---
 /**
  * Route unique : génère toutes les pages FR et EN à partir de la table
- * ROUTES (src/i18n/routes.ts). Chaque clé est rendue par son composant.
+ * ROUTES (src/i18n/routes.ts), plus une page par exercice corrigé
+ * (collection src/content/exercises). Chaque page est rendue par son composant.
  */
 import {
   LANGS,
@@ -18,23 +19,35 @@ import GuidePage from '../components/pages/GuidePage.astro';
 import CalculatorsIndex from '../components/pages/CalculatorsIndex.astro';
 import CalculatorPage from '../components/pages/CalculatorPage.astro';
 import ContentPage from '../components/pages/ContentPage.astro';
-
-export function getStaticPaths() {
-  return ROUTE_KEYS.flatMap((key) =>
-    LANGS.map((lang) => ({
-      params: { path: ROUTES[key][lang].replace(/^\/|\/$/g, '') },
-      props: { key, lang },
-    })),
-  );
-}
+import ExercisesIndex from '../components/pages/ExercisesIndex.astro';
+import ExercisePage from '../components/pages/ExercisePage.astro';
+import { exercisePages, type ExercisePage as ExercisePageData } from '../lib/exercises';
 
 interface Props {
-  key: RouteKey;
+  key?: RouteKey;
   lang: Lang;
+  exercise?: ExercisePageData;
 }
-const { key, lang } = Astro.props;
-const isGuide = (GUIDE_KEYS as readonly string[]).includes(key);
-const isCalc = (CALC_KEYS as readonly string[]).includes(key);
+
+export async function getStaticPaths() {
+  // getStaticPaths est isolée du reste du module : ses aides sont définies ici.
+  const trim = (p: string) => p.replace(/^\/|\/$/g, '');
+  const fixed = ROUTE_KEYS.flatMap((key) =>
+    LANGS.map((lang) => ({
+      params: { path: trim(ROUTES[key][lang]) },
+      props: { key, lang } satisfies Props,
+    })),
+  );
+  const exercises = (await exercisePages()).map((page) => ({
+    params: { path: trim(page.route) },
+    props: { lang: page.lang, exercise: page } satisfies Props,
+  }));
+  return [...fixed, ...exercises];
+}
+
+const { key, lang, exercise } = Astro.props;
+const isGuide = key !== undefined && (GUIDE_KEYS as readonly string[]).includes(key);
+const isCalc = key !== undefined && (CALC_KEYS as readonly string[]).includes(key);
 ---
 
 {key === 'home' && <ToolPage lang={lang} />}
@@ -42,6 +55,8 @@ const isCalc = (CALC_KEYS as readonly string[]).includes(key);
 {isGuide && <GuidePage lang={lang} guideKey={key as (typeof GUIDE_KEYS)[number]} />}
 {key === 'calculators' && <CalculatorsIndex lang={lang} />}
 {isCalc && <CalculatorPage lang={lang} calcKey={key as (typeof CALC_KEYS)[number]} />}
+{key === 'exercises' && <ExercisesIndex lang={lang} />}
+{exercise && <ExercisePage page={exercise} />}
 {(key === 'methodology' || key === 'privacy' || key === 'legal') && (
   <ContentPage lang={lang} pageKey={key} />
 )}
