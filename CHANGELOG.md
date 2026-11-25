@@ -10,6 +10,16 @@
 - Page de confidentialité : ligne sur la sauvegarde de la simulation dans le stockage local.
 - Test unitaire qui recalcule toutes les corrections avec le moteur du site.
 - Menu : entrées « Exercices », « Kit ordonnancement » et « Simulation » ; « Méthodologie » passe dans le pied de page. Bandeau « Aller plus loin » en bas de l'accueil.
+- Résultats : colonne « Statut » (À commander, Surstock, OK, Stock inconnu), bandeau « À traiter » avec compteurs cliquables qui filtrent le tableau, filtre par statut, rappel des paramètres utilisés, légende des colonnes et définition au survol des en-têtes.
+- Accueil : boutons « Essayer avec un exemple » et « Charger mon fichier » sous le titre, aperçu des résultats à droite (écran large).
+- Simulation : précision sur la capacité de l'entrepôt selon le profil, badge « Nouvel article » sur l'article lancé en cours de partie.
+
+### Modifié
+
+- Outil : les paramètres s'affichent avant le calcul, et le bouton « Lancer le calcul » est à la fin de l'étape 3 ; les pastilles d'étape mènent à leur section ; un clic sur un article amène à ses graphiques.
+- Résultats : colonnes statistiques (moyenne, écart-type, CV) masquées par défaut, statut et alertes ramenés à gauche, détail de lecture du fichier replié (ouvert s'il signale des lignes illisibles).
+- Menu : « Guides », « Exercices » et « Simulation » regroupés sous « Apprendre » ; le kit ordonnancement, pas encore disponible, ne reste que dans le pied de page et dans « Aller plus loin ». Sur mobile, le menu se replie derrière un bouton « Menu ».
+- Textes : promesse de l'accueil centrée sur le bénéfice, encart de confidentialité raccourci sur mobile, bloc « Partager l'outil » déplacé en bas de page.
 
 ## [1.0.0] — 2026-11-20
 

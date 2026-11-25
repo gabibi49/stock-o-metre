@@ -137,7 +137,7 @@ test.describe('outil', () => {
     await page.locator('#f-abc').selectOption('A');
     const rows = page.locator('#results-wrap tbody tr.item-row');
     expect(await rows.count()).toBeGreaterThan(0);
-    for (const cls of await rows.locator('td:nth-child(3)').allTextContents())
+    for (const cls of await rows.locator('td[data-col="abc"]').allTextContents())
       expect(cls).toBe('A');
     await page.locator('#results-wrap button[data-sort="ss"]').click();
     await expect(page.locator('#results-wrap th[aria-sort="ascending"]')).toContainText(

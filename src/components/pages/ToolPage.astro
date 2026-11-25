@@ -48,6 +48,37 @@ const shareText = encodeURIComponent(t.share.emailSubject);
 const shareBody = encodeURIComponent(fmt(t.share.emailBody, { url: homeUrl }));
 const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(homeUrl)}`;
 const mailto = `mailto:?subject=${shareText}&body=${shareBody}`;
+// Aperçu statique des résultats, tiré du fichier d'exemple (paramètres par défaut).
+const previewRows: {
+  id: string;
+  status: 'order' | 'over' | 'ok';
+  rop: number;
+  target: number;
+  stock: number;
+}[] = [
+  { id: 'P08', status: 'order', rop: 393, target: 526, stock: 363 },
+  { id: 'P03', status: 'over', rop: 491, target: 657, stock: 792 },
+  { id: 'P01', status: 'ok', rop: 606, target: 885, stock: 614 },
+];
+const legendKeys = [
+  'status',
+  'alerts',
+  'abc',
+  'xyz',
+  'ss',
+  'rop',
+  'target',
+  'stock',
+  'gap',
+  'coverage',
+  'mu',
+  'sigma',
+  'cv',
+] as const;
+const legend = legendKeys.map((k) => ({
+  label: fmt(t.results.cols[k], { period: t.results.periodShort.week }),
+  help: t.results.help[k],
+}));
 const chartIds = [
   { id: 'chart-stock', wide: true, title: '' },
   { id: 'chart-cons', wide: true, title: '' },
@@ -60,40 +91,98 @@ const chartIds = [
 <Base lang={lang} routeKey="home" title={m.title} description={m.description} jsonLd={jsonLd}>
   <div class="container">
     <section class="tool-hero">
-      <h1>{m.heading}</h1>
-      <p class="lead">{t.promise}</p>
-      <div class="privacy-badge" id="privacy">
-        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path
-            d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"
-            fill="#d8efe0"
-            stroke="#1a6b37"
-            stroke-width="1.8"
-            stroke-linejoin="round"
-          ></path>
-          <path
-            d="m8.5 12 2.5 2.5 4.5-5"
-            fill="none"
-            stroke="#1a6b37"
-            stroke-width="2"
-            stroke-linecap="round"
-          ></path>
-        </svg>
-        <div>
-          <strong>{t.privacyTitle}</strong>
-          <p>{t.privacyText}</p>
+      <div class="tool-hero-text">
+        <h1>{m.heading}</h1>
+        <p class="lead">{t.promise}</p>
+        <div class="hero-cta">
+          <button type="button" class="btn btn-large" data-example>
+            {t.cta.example}
+          </button>
+          <a class="btn btn-secondary btn-large" href="#step-upload">
+            {t.cta.upload}
+          </a>
+        </div>
+        <p class="field-hint hero-hint">{t.cta.hint}</p>
+        <div class="privacy-badge" id="privacy">
+          <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"
+              fill="#d8efe0"
+              stroke="#1a6b37"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            ></path>
+            <path
+              d="m8.5 12 2.5 2.5 4.5-5"
+              fill="none"
+              stroke="#1a6b37"
+              stroke-width="2"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          <div>
+            <strong>{t.privacyTitle}</strong>
+            <p>
+              {t.privacyText} <span class="privacy-more">{t.privacyMore}</span>
+            </p>
+          </div>
         </div>
       </div>
+      <figure class="hero-preview" aria-labelledby="hero-preview-caption">
+        <figcaption id="hero-preview-caption">{t.preview.caption}</figcaption>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{t.preview.item}</th>
+              <th scope="col">{t.preview.status}</th>
+              <th scope="col" class="num">
+                {t.preview.rop}
+              </th>
+              <th scope="col" class="num">
+                {t.preview.target}
+              </th>
+              <th scope="col" class="num">
+                {t.preview.stock}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {previewRows.map((r) => (
+              <tr>
+                <th scope="row">{r.id}</th>
+                <td>
+                  <span class={`status status-${r.status}`}>{t.results.status[r.status]}</span>
+                </td>
+                <td class="num">{r.rop}</td>
+                <td class="num">{r.target}</td>
+                <td class="num">{r.stock}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </figure>
     </section>
 
     <nav class="steps-nav" aria-label={t.steps.label}>
       <ol>
         <li data-step="upload" aria-current="step">
-          {t.steps.upload}
+          <a href="#step-upload">{t.steps.upload}</a>
         </li>
-        <li data-step="mapping">{t.steps.mapping}</li>
-        <li data-step="params">{t.steps.params}</li>
-        <li data-step="results">{t.steps.results}</li>
+        <li data-step="mapping">
+          <a href="#step-mapping" aria-disabled="true">
+            {t.steps.mapping}
+          </a>
+        </li>
+        <li data-step="params">
+          <a href="#step-params" aria-disabled="true">
+            {t.steps.params}
+          </a>
+        </li>
+        <li data-step="results">
+          <a href="#step-results" aria-disabled="true">
+            {t.steps.results}
+          </a>
+        </li>
       </ol>
     </nav>
 
@@ -194,21 +283,14 @@ const chartIds = [
         {t.mapping.noStock}
       </p>
       <div id="mapping-error" role="alert"></div>
-      <p>
-        <button type="button" class="btn" id="analyze-btn">
-          {t.mapping.analyze}
-        </button>
-      </p>
-      <div class="progress-wrap" id="analyze-progress" hidden>
-        <label for="analyze-progress-bar">{t.upload.building}</label>
-        <progress id="analyze-progress-bar"></progress>
-      </div>
     </section>
 
     <!-- Étape 3 : paramètres -->
     <section id="step-params" class="card tool-section" aria-labelledby="params-title" hidden>
-      <h2 id="params-title">{t.params.title}</h2>
-      <p class="field-hint">{t.params.intro}</p>
+      <h2 id="params-title" tabindex="-1">
+        {t.params.title}
+      </h2>
+      <p>{t.params.intro}</p>
       <form id="params-form" novalidate>
         <div class="grid-fields">
           <fieldset>
@@ -224,11 +306,33 @@ const chartIds = [
           </fieldset>
           <div class="field">
             <label for="p-lead">{t.params.lead}</label>
-            <input type="number" id="p-lead" min="0" step="any" value="14" inputmode="decimal" />
+            <input
+              type="number"
+              id="p-lead"
+              min="0"
+              step="any"
+              value="14"
+              inputmode="decimal"
+              aria-describedby="p-lead-hint"
+            />
+            <p class="field-hint" id="p-lead-hint">
+              {t.params.leadHint}
+            </p>
           </div>
           <div class="field">
             <label for="p-review">{t.params.review}</label>
-            <input type="number" id="p-review" min="0" step="any" value="7" inputmode="decimal" />
+            <input
+              type="number"
+              id="p-review"
+              min="0"
+              step="any"
+              value="7"
+              inputmode="decimal"
+              aria-describedby="p-review-hint"
+            />
+            <p class="field-hint" id="p-review-hint">
+              {t.params.reviewHint}
+            </p>
           </div>
           <div class="field">
             <label for="p-leadsd">{t.params.leadSd}</label>
@@ -283,10 +387,14 @@ const chartIds = [
                     value={[98, 95, 90][i]}
                     inputmode="decimal"
                     aria-label={`${fmt(t.params.classLabel, { cls: c })} (%)`}
+                    aria-describedby="p-sl-hint"
                   />
                 </label>
               ))}
             </div>
+            <p class="field-hint" id="p-sl-hint">
+              {t.params.serviceHint}
+            </p>
           </fieldset>
           <fieldset>
             <legend>{t.params.abcThresholds}</legend>
@@ -348,7 +456,19 @@ const chartIds = [
         </div>
       </form>
       <div id="params-error" role="alert"></div>
-      <div id="report" class="notice" aria-live="polite"></div>
+      <p class="notice notice-warn" id="analyze-blocked" hidden>
+        {t.params.fixMapping}
+      </p>
+      <div id="analyze-error" role="alert"></div>
+      <p>
+        <button type="button" class="btn btn-large" id="analyze-btn">
+          {t.mapping.analyze}
+        </button>
+      </p>
+      <div class="progress-wrap" id="analyze-progress" hidden>
+        <label for="analyze-progress-bar">{t.upload.building}</label>
+        <progress id="analyze-progress-bar"></progress>
+      </div>
     </section>
 
     <!-- Étape 4 : résultats -->
@@ -356,8 +476,17 @@ const chartIds = [
       <h2 id="results-title" tabindex="-1">
         {t.results.title}
       </h2>
+      <p class="meta-line" id="params-recap-line">
+        <span id="params-recap"></span>
+        <a href="#step-params">{t.params.recapLink}</a>
+      </p>
       <p id="abc-basis" class="meta-line"></p>
+      <div class="todo" id="todo" aria-live="polite"></div>
       <div class="summary-cards" id="cards"></div>
+      <details class="report">
+        <summary>{t.report.title}</summary>
+        <div id="report"></div>
+      </details>
       <div class="toolbar">
         <div class="field grow">
           <label for="f-search">{t.results.search}</label>
@@ -387,9 +516,17 @@ const chartIds = [
             <option value="-">{t.results.na}</option>
           </select>
         </div>
-        <label class="checkbox">
-          <input type="checkbox" id="f-alerts" /> {t.results.alertsOnly}
-        </label>
+        <div class="field">
+          <label for="f-status">{t.results.filterStatus}</label>
+          <select id="f-status">
+            <option value="">{t.results.all}</option>
+            <option value="order">{t.results.status.order}</option>
+            <option value="over">{t.results.status.over}</option>
+            <option value="ok">{t.results.status.ok}</option>
+            <option value="unknown">{t.results.status.unknown}</option>
+            <option value="check">{t.results.statusCheck}</option>
+          </select>
+        </div>
         <div class="field">
           <label for="f-size">{t.results.pageSize}</label>
           <select id="f-size">
@@ -403,6 +540,22 @@ const chartIds = [
         <button type="button" class="btn btn-secondary" id="export-csv">
           {t.results.exportCsv}
         </button>
+      </div>
+      <div class="table-options">
+        <label class="checkbox">
+          <input type="checkbox" id="f-details" /> {t.results.showDetails}
+        </label>
+        <details class="legend">
+          <summary>{t.results.legendTitle}</summary>
+          <dl>
+            {legend.map((l) => (
+              <div>
+                <dt>{l.label}</dt>
+                <dd>{l.help}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
       </div>
       <div class="table-wrap" id="results-wrap"></div>
       <div class="pager">
@@ -420,9 +573,16 @@ const chartIds = [
           <figure class:list={['chart-card', { wide: c.wide }]} aria-labelledby={`${c.id}-title`}>
             <div class="chart-head">
               <h3 id={`${c.id}-title`}>{c.title}</h3>
-              <button type="button" class="btn btn-secondary btn-small" data-download={c.id}>
-                {t.charts.download}
-              </button>
+              <div class="chart-actions">
+                {c.id === 'chart-stock' && (
+                  <a class="btn btn-secondary btn-small" href="#results-title">
+                    {t.charts.backToTable}
+                  </a>
+                )}
+                <button type="button" class="btn btn-secondary btn-small" data-download={c.id}>
+                  {t.charts.download}
+                </button>
+              </div>
             </div>
             {c.id === 'chart-stock' && (
               <p class="notice notice-warn" id="chart-stock-note" hidden>
@@ -447,33 +607,6 @@ const chartIds = [
           <p>{t.explain.none}</p>
         </div>
       </details>
-    </section>
-
-    <section class="card tool-section" aria-labelledby="share-title">
-      <h2 id="share-title">{t.share.title}</h2>
-      <p class="field-hint">{t.share.text}</p>
-      <div class="share-row">
-        <a
-          class="btn btn-secondary btn-small"
-          href={linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t.share.linkedin}
-        </a>
-        <a class="btn btn-secondary btn-small" href={mailto}>
-          {t.share.email}
-        </a>
-        <button
-          type="button"
-          class="btn btn-secondary btn-small"
-          id="share-copy"
-          data-url={homeUrl}
-        >
-          {t.share.copy}
-        </button>
-        <span id="share-status" role="status" aria-live="polite"></span>
-      </div>
     </section>
 
     <section class="tool-section further" aria-labelledby="further-title">
@@ -504,6 +637,33 @@ const chartIds = [
           </article>
         </li>
       </ul>
+    </section>
+
+    <section class="card tool-section" aria-labelledby="share-title">
+      <h2 id="share-title">{t.share.title}</h2>
+      <p class="field-hint">{t.share.text}</p>
+      <div class="share-row">
+        <a
+          class="btn btn-secondary btn-small"
+          href={linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t.share.linkedin}
+        </a>
+        <a class="btn btn-secondary btn-small" href={mailto}>
+          {t.share.email}
+        </a>
+        <button
+          type="button"
+          class="btn btn-secondary btn-small"
+          id="share-copy"
+          data-url={homeUrl}
+        >
+          {t.share.copy}
+        </button>
+        <span id="share-status" role="status" aria-live="polite"></span>
+      </div>
     </section>
   </div>
   <script type="application/json" id="tool-config" is:inline set:html={configJson} />

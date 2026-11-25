@@ -26,6 +26,8 @@ import { byId, el, setChildren } from './dom';
 import { renderExplain } from './explain';
 import type { BuildResponse, InspectResult, LoadResult } from './protocol';
 import { applyOverrideInput, exportResults, renderCards, renderTable } from './results';
+
+const statusFilterValues = ['', 'order', 'over', 'ok', 'unknown', 'check'];
 import { recompute, resetAnalysis, state } from './state';
 import { loadMapping, saveMapping } from './storage';
 import { CsvWorker, WorkerError } from './worker-client';
@@ -52,6 +54,26 @@ function setStep(step: 'upload' | 'mapping' | 'params' | 'results'): void {
     else li.removeAttribute('aria-current');
     li.dataset['state'] = i < current ? 'done' : '';
   });
+  syncStepLinks();
+}
+
+/** Les pastilles d'étape sont des liens : désactivés tant que leur section est masquée. */
+function syncStepLinks(): void {
+  document.querySelectorAll<HTMLAnchorElement>('.steps-nav a').forEach((a) => {
+    const target = document.getElementById(a.hash.slice(1));
+    const off = !target || target.hidden;
+    if (off) a.setAttribute('aria-disabled', 'true');
+    else a.removeAttribute('aria-disabled');
+  });
+}
+
+const reducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function scrollToId(id: string, focus = false): void {
+  const target = document.getElementById(id);
+  if (!target || target.hidden) return;
+  target.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  if (focus) target.focus({ preventScroll: true });
 }
 
 function showError(boxId: string, messages: string[]): void {
@@ -174,6 +196,7 @@ async function setupMapping(load: LoadResult): Promise<void> {
   setChildren(byId('mapping-note'), validSaved ? t.mapping.remembered : t.mapping.auto);
   renderMappingFields(load.header);
   show('step-mapping');
+  show('step-params');
   setStep('mapping');
   await inspect(validSaved ? saved : null);
   byId('mapping-title').focus();
@@ -314,6 +337,7 @@ function validateMapping(): boolean {
   }
   showError('mapping-error', [...new Set(errors)]);
   byId<HTMLButtonElement>('analyze-btn').disabled = errors.length > 0;
+  byId('analyze-blocked').hidden = errors.length === 0;
   return errors.length === 0;
 }
 
@@ -321,6 +345,8 @@ async function analyze(): Promise<void> {
   const m = state.mapping;
   const load = state.load;
   if (!m || !load || !validateMapping()) return;
+  if (!readParams()) return;
+  showError('analyze-error', []);
   show('analyze-progress');
   byId<HTMLButtonElement>('analyze-btn').disabled = true;
   try {
@@ -335,13 +361,13 @@ async function analyze(): Promise<void> {
     });
     const issues = reportIssues(res.report);
     if (!res.ok) {
-      showError('mapping-error', [
+      showError('analyze-error', [
         res.error === 'tooManyItems' ? t.errors.tooManyItems : t.errors.noValidRows,
         ...issues,
       ]);
       return;
     }
-    showError('mapping-error', []);
+    showError('analyze-error', []);
     saveMapping(headerSignature(load.header), {
       mapping: m,
       dateOrder: state.dateOrder,
@@ -351,13 +377,14 @@ async function analyze(): Promise<void> {
     resetAnalysis();
     state.dataset = res.dataset;
     state.report = res.report;
-    show('step-params');
+    state.filterStatus = '';
+    byId<HTMLSelectElement>('f-status').value = '';
     show('step-results');
     setStep('results');
     refresh(true);
-    byId('results-title').focus();
+    scrollToId('results-title', true);
   } catch (err) {
-    showError('mapping-error', [errorMessage(err)]);
+    showError('analyze-error', [errorMessage(err)]);
   } finally {
     show('analyze-progress', false);
     byId<HTMLButtonElement>('analyze-btn').disabled = false;
@@ -489,10 +516,23 @@ function renderReport(): void {
       fmt(t.report.droppedLast, { label: periodLabel(a.droppedLast, kind, ctx.weekPrefix) }),
     );
   const issues = reportIssues(r);
+  setChildren(byId('report'), el('ul', {}, ...[...lines, ...issues].map((l) => el('li', {}, l))));
+  // Le détail de lecture reste replié, sauf s'il signale des lignes illisibles.
+  const box = byId('report').closest('details');
+  if (box) box.open = issues.length > 0;
+}
+
+function renderParamsRecap(p: GlobalParams): void {
   setChildren(
-    byId('report'),
-    el('h3', {}, t.report.title),
-    el('ul', {}, ...[...lines, ...issues].map((l) => el('li', {}, l))),
+    byId('params-recap'),
+    fmt(t.params.recap, {
+      lead: ctx.f(p.leadTimeDays, 2),
+      review: ctx.f(p.reviewDays, 2),
+      a: ctx.f(p.serviceLevels.A * 100, 2),
+      b: ctx.f(p.serviceLevels.B * 100, 2),
+      c: ctx.f(p.serviceLevels.C * 100, 2),
+      period: t.params.periods[p.kind].toLowerCase(),
+    }),
   );
 }
 
@@ -508,6 +548,7 @@ function refresh(first = false): void {
     state.selected = a.pareto[0]?.index ?? null;
   }
   renderReport();
+  renderParamsRecap(params);
   renderCards(ctx, a);
   renderTable(ctx, a);
   void updateCharts(first);
@@ -547,7 +588,18 @@ function selectItem(index: number): void {
   const a = state.analysis;
   if (!a) return;
   renderTable(ctx, a);
-  void updateCharts(false);
+  // Les graphiques sont sous le tableau : on y amène le visiteur.
+  void updateCharts(false).then(() => scrollToId('chart-stock-title'));
+}
+
+function setStatusFilter(value: string): void {
+  state.filterStatus = statusFilterValues.includes(value) ? value : '';
+  byId<HTMLSelectElement>('f-status').value = state.filterStatus;
+  state.page = 0;
+  const a = state.analysis;
+  if (!a) return;
+  renderCards(ctx, a);
+  renderTable(ctx, a);
 }
 
 // ------------------------------------------------------------------ événements
@@ -583,7 +635,7 @@ function bind(): void {
   window.addEventListener('dragover', (e) => e.preventDefault());
   window.addEventListener('drop', (e) => e.preventDefault());
 
-  byId('example-btn').addEventListener('click', async () => {
+  const loadExample = async () => {
     try {
       const res = await fetch(ctx.exampleUrl, { credentials: 'omit' });
       if (!res.ok) throw new Error(String(res.status));
@@ -592,6 +644,20 @@ function bind(): void {
     } catch {
       showError('upload-error', [t.errors.example]);
     }
+  };
+  byId('example-btn').addEventListener('click', () => void loadExample());
+  document.querySelectorAll<HTMLButtonElement>('[data-example]').forEach((b) =>
+    b.addEventListener('click', () => {
+      void loadExample().then(() => scrollToId('mapping-title', true));
+    }),
+  );
+
+  document.querySelector('.steps-nav')?.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a');
+    if (!link) return;
+    e.preventDefault();
+    if (link.getAttribute('aria-disabled') === 'true') return;
+    scrollToId(link.hash.slice(1));
   });
 
   byId('mapping-fields').addEventListener('change', (e) => {
@@ -642,9 +708,20 @@ function bind(): void {
     state.filterXyz = (e.target as HTMLSelectElement).value;
     resetPage();
   });
-  byId<HTMLInputElement>('f-alerts').addEventListener('change', (e) => {
-    state.alertsOnly = (e.target as HTMLInputElement).checked;
-    resetPage();
+  byId<HTMLSelectElement>('f-status').addEventListener('change', (e) => {
+    setStatusFilter((e.target as HTMLSelectElement).value);
+  });
+  byId('todo').addEventListener('click', (e) => {
+    const chip = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
+    if (!chip) return;
+    setStatusFilter(chip.dataset['filter'] ?? '');
+    byId('todo')
+      .querySelector<HTMLButtonElement>(`button[data-filter="${state.filterStatus}"]`)
+      ?.focus();
+  });
+  byId<HTMLInputElement>('f-details').addEventListener('change', (e) => {
+    state.showDetails = (e.target as HTMLInputElement).checked;
+    if (state.analysis) renderTable(ctx, state.analysis);
   });
   byId<HTMLSelectElement>('f-size').addEventListener('change', (e) => {
     state.pageSize = Number((e.target as HTMLSelectElement).value);

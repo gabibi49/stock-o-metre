@@ -16,6 +16,7 @@ import type { InspectResult, LoadResult } from './protocol';
 
 export type SortKey =
   | 'item'
+  | 'status'
   | 'label'
   | 'abc'
   | 'xyz'
@@ -50,7 +51,9 @@ export interface State {
   search: string;
   filterAbc: string;
   filterXyz: string;
-  alertsOnly: boolean;
+  /** '' (tous), 'order', 'over', 'ok', 'unknown' ou 'check' (articles avec alerte). */
+  filterStatus: string;
+  showDetails: boolean;
   page: number;
   pageSize: number;
   selected: number | null;
@@ -76,7 +79,8 @@ export const state: State = {
   search: '',
   filterAbc: '',
   filterXyz: '',
-  alertsOnly: false,
+  filterStatus: '',
+  showDetails: false,
   page: 0,
   pageSize: 50,
   selected: null,

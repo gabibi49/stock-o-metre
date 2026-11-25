@@ -5,7 +5,7 @@ import {
   SAFETY_METHODS,
   type SafetyMethod,
 } from '../engine/safety';
-import { fmt } from '../i18n';
+import { fmt, plural } from '../i18n';
 import { toCsv, type Cell } from '../lib/csvExport';
 import type { ToolContext } from './context';
 import { downloadBlob, el, setChildren, type Child } from './dom';
@@ -18,7 +18,22 @@ interface Column {
   value?: (r: ItemResult) => number | string | null;
   cell: (ctx: ToolContext, r: ItemResult) => Child | Child[];
   className?: (r: ItemResult) => string | undefined;
+  /** Colonne statistique, masquée tant que « Afficher les colonnes statistiques » n'est pas coché. */
+  detail?: boolean;
 }
+
+export type Status = 'order' | 'over' | 'ok' | 'unknown';
+const STATUS_ORDER: Status[] = ['order', 'over', 'ok', 'unknown'];
+
+/** Ce qu'il faut faire pour l'article, d'après son stock actuel. */
+export function statusOf(r: ItemResult): Status {
+  if (r.currentStock === null) return 'unknown';
+  if (r.currentStock < r.policy.ropRounded) return 'order';
+  if (r.gap !== null && r.gap > 0) return 'over';
+  return 'ok';
+}
+
+type HelpKey = keyof ToolContext['t']['results']['help'];
 
 const dash = (ctx: ToolContext): string => ctx.t.results.na;
 
@@ -56,6 +71,25 @@ const COLUMNS: Column[] = [
     cell: (_c, r) => el('span', { class: 'item-label', title: r.label }, r.label),
   },
   {
+    key: 'status',
+    label: (c) => c.t.results.cols.status,
+    value: (r) => STATUS_ORDER.indexOf(statusOf(r)),
+    cell: (c, r) => {
+      const st = statusOf(r);
+      return el(
+        'span',
+        { class: `status status-${st}`, title: c.t.results.statusHelp[st] },
+        c.t.results.status[st],
+      );
+    },
+  },
+  {
+    key: 'alerts',
+    label: (c) => c.t.results.cols.alerts,
+    value: (r) => r.alerts.length,
+    cell: (c, r) => r.alerts.map((code) => alertBadge(c, code, r)),
+  },
+  {
     key: 'abc',
     label: (c) => c.t.results.cols.abc,
     value: (r) => r.abc,
@@ -70,6 +104,7 @@ const COLUMNS: Column[] = [
   {
     key: 'mu',
     num: true,
+    detail: true,
     label: (c, a) => fmt(c.t.results.cols.mu, { period: c.t.results.periodShort[a.kind] }),
     value: (r) => r.mu,
     cell: (c, r) => c.f(r.mu, 2),
@@ -77,6 +112,7 @@ const COLUMNS: Column[] = [
   {
     key: 'sigma',
     num: true,
+    detail: true,
     label: (c) => c.t.results.cols.sigma,
     value: (r) => r.sigma,
     cell: (c, r) => c.f(r.sigma, 2),
@@ -84,6 +120,7 @@ const COLUMNS: Column[] = [
   {
     key: 'cv',
     num: true,
+    detail: true,
     label: (c) => c.t.results.cols.cv,
     value: (r) => r.cv,
     cell: (c, r) => (r.cv === null ? dash(c) : c.f(r.cv, 2)),
@@ -158,12 +195,6 @@ const COLUMNS: Column[] = [
           : c.f(r.coverageDays, 1),
   },
   {
-    key: 'alerts',
-    label: (c) => c.t.results.cols.alerts,
-    value: (r) => r.alerts.length,
-    cell: (c, r) => r.alerts.map((code) => alertBadge(c, code, r)),
-  },
-  {
     key: 'edit',
     label: (c) => c.t.results.cols.edit,
     cell: (c, r) =>
@@ -211,7 +242,10 @@ export function visibleRows(a: AnalysisResult): ItemResult[] {
       (state.filterAbc === '' || r.abc === state.filterAbc) &&
       (state.filterXyz === '' ||
         (state.filterXyz === '-' ? r.xyz === null : r.xyz === state.filterXyz)) &&
-      (!state.alertsOnly || r.alerts.length > 0) &&
+      (state.filterStatus === '' ||
+        (state.filterStatus === 'check'
+          ? r.alerts.length > 0
+          : statusOf(r) === state.filterStatus)) &&
       (q === '' || r.id.toLowerCase().includes(q) || r.label.toLowerCase().includes(q)),
   );
   if (col?.value) {
@@ -226,9 +260,15 @@ export function visibleRows(a: AnalysisResult): ItemResult[] {
   return rows;
 }
 
+/** Colonnes affichées (les colonnes statistiques sont masquées par défaut). */
+function shownColumns(): Column[] {
+  return COLUMNS.filter((c) => state.showDetails || !c.detail);
+}
+
 export function renderTable(ctx: ToolContext, a: AnalysisResult): void {
   const wrap = document.getElementById('results-wrap');
   if (!wrap) return;
+  const columns = shownColumns();
   const rows = visibleRows(a);
   const pages = Math.max(1, Math.ceil(rows.length / state.pageSize));
   state.page = Math.min(state.page, pages - 1);
@@ -236,8 +276,9 @@ export function renderTable(ctx: ToolContext, a: AnalysisResult): void {
   const pageRows = rows.slice(start, start + state.pageSize);
 
   const headRow = el('tr');
-  for (const c of COLUMNS) {
+  for (const c of columns) {
     const label = c.label(ctx, a);
+    const help = c.key in ctx.t.results.help ? ctx.t.results.help[c.key as HelpKey] : null;
     const sorted = state.sortKey === c.key;
     const th = el('th', {
       scope: 'col',
@@ -252,7 +293,9 @@ export function renderTable(ctx: ToolContext, a: AnalysisResult): void {
             type: 'button',
             class: 'sort',
             'data-sort': c.key,
-            title: fmt(ctx.t.results.sortBy, { col: label }),
+            title: help
+              ? `${help} (${fmt(ctx.t.results.sortBy, { col: label })})`
+              : fmt(ctx.t.results.sortBy, { col: label }),
           },
           label,
         ),
@@ -270,10 +313,11 @@ export function renderTable(ctx: ToolContext, a: AnalysisResult): void {
       'data-index': r.index,
     });
     if (state.selected === r.index) tr.setAttribute('aria-selected', 'true');
-    for (const c of COLUMNS) {
+    for (const c of columns) {
       const content = c.cell(ctx, r);
       const td = el('td', {
         class: [c.num ? 'num' : '', c.className?.(r) ?? ''].join(' ').trim() || undefined,
+        'data-col': c.key,
       });
       for (const node of Array.isArray(content) ? content : [content]) {
         if (node === null || node === undefined || node === false) continue;
@@ -289,7 +333,7 @@ export function renderTable(ctx: ToolContext, a: AnalysisResult): void {
     if (state.expanded === r.index) tbody.appendChild(editRow(ctx, r));
   }
   if (pageRows.length === 0) {
-    tbody.appendChild(el('tr', {}, el('td', { colspan: COLUMNS.length }, ctx.t.results.noMatch)));
+    tbody.appendChild(el('tr', {}, el('td', { colspan: columns.length }, ctx.t.results.noMatch)));
   }
 
   const table = el(
@@ -416,7 +460,7 @@ function editRow(ctx: ToolContext, r: ItemResult): HTMLTableRowElement {
     ),
     el('div', { role: 'alert', id: `ov-error-${r.index}`, class: 'error-text' }),
   );
-  return el('tr', { class: 'edit-row' }, el('td', { colspan: COLUMNS.length }, panel));
+  return el('tr', { class: 'edit-row' }, el('td', { colspan: shownColumns().length }, panel));
 }
 
 /** Lit un champ de réglage par article. Renvoie false si la valeur est invalide. */
@@ -469,9 +513,9 @@ export function renderCards(ctx: ToolContext, a: AnalysisResult): void {
   const res = a.results;
   const count = (c: string) => res.filter((r) => r.abc === c).length;
   const withAlerts = res.filter((r) => r.alerts.length > 0).length;
-  const belowRop = res.filter(
-    (r) => r.currentStock !== null && r.currentStock < r.policy.ropRounded,
-  ).length;
+  const belowRop = res.filter((r) => statusOf(r) === 'order').length;
+  const overCount = res.filter((r) => statusOf(r) === 'over').length;
+  const stockKnown = res.some((r) => r.currentStock !== null);
   const useValue = a.abcBasis === 'value';
   let over = 0;
   let under = 0;
@@ -494,13 +538,53 @@ export function renderCards(ctx: ToolContext, a: AnalysisResult): void {
     box,
     stat(t.items, ctx.f(res.length, 0)),
     stat(t.classes, `${count('A')} / ${count('B')} / ${count('C')}`),
-    stat(t.alerts, ctx.f(withAlerts, 0)),
-    stat(t.belowRop, ctx.f(belowRop, 0)),
     stat(t.overstock + vh, `${ctx.f(over, 0)}${unit}`),
     stat(t.understock + vh, `${ctx.f(under, 0)}${unit}`),
   );
+  renderTodo(ctx, { order: belowRop, over: overCount, check: withAlerts, stockKnown });
   const basis = document.getElementById('abc-basis');
   if (basis) setChildren(basis, useValue ? ctx.t.results.abcValue : ctx.t.results.abcQty);
+}
+
+/** Bandeau « À traiter » : compteurs cliquables qui filtrent le tableau. */
+export function renderTodo(
+  ctx: ToolContext,
+  n: { order: number; over: number; check: number; stockKnown: boolean },
+): void {
+  const box = document.getElementById('todo');
+  if (!box) return;
+  const t = ctx.t.results.todo;
+  const chip = (filter: string, text: string, kind: string) =>
+    el(
+      'button',
+      {
+        type: 'button',
+        class: `todo-chip todo-${kind}`,
+        'data-filter': filter,
+        'aria-pressed': state.filterStatus === filter ? 'true' : 'false',
+      },
+      text,
+    );
+  const chips: HTMLElement[] = [];
+  const count = (forms: { one: string; other: string }, value: number) =>
+    plural(ctx.lang, forms, value, { count: ctx.f(value, 0) });
+  if (n.stockKnown) {
+    if (n.order > 0) chips.push(chip('order', count(t.order, n.order), 'order'));
+    if (n.over > 0) chips.push(chip('over', count(t.over, n.over), 'over'));
+  }
+  if (n.check > 0) chips.push(chip('check', count(t.check, n.check), 'check'));
+  if (chips.length > 0) chips.push(chip('', t.all, 'all'));
+  setChildren(
+    box,
+    el('h3', { class: 'todo-title' }, t.title),
+    chips.length ? el('div', { class: 'todo-chips' }, ...chips) : null,
+    chips.length ? el('p', { class: 'field-hint' }, t.hint) : null,
+    !n.stockKnown
+      ? el('p', { class: 'notice notice-warn' }, t.noStock)
+      : n.order === 0 && n.over === 0
+        ? el('p', { class: 'field-hint' }, t.none)
+        : null,
+  );
 }
 
 /** Export CSV des résultats (cellules texte protégées contre l'injection de formules). */
@@ -509,6 +593,7 @@ export function exportResults(ctx: ToolContext, a: AnalysisResult): void {
   const header: Cell[] = [
     t.cols.item,
     t.cols.label,
+    t.cols.status,
     t.cols.abc,
     t.cols.xyz,
     fmt(t.cols.mu, { period: t.periodShort[a.kind] }),
@@ -532,6 +617,7 @@ export function exportResults(ctx: ToolContext, a: AnalysisResult): void {
     rows.push([
       r.id,
       r.label,
+      t.status[statusOf(r)],
       r.abc,
       r.xyz ?? '',
       round(r.mu, 4),

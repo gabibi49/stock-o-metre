@@ -174,7 +174,8 @@ test('kit ordonnancement : présentation seule, fichier CSV, aperçu calculé', 
   request,
 }) => {
   await page.goto('/stock-o-metre/fr/');
-  await page.locator('nav a', { hasText: 'Kit ordonnancement' }).click();
+  // Le kit, pas encore disponible, n'est plus dans le menu : on y va par le pied de page.
+  await page.locator('footer a', { hasText: 'Kit ordonnancement' }).click();
   await expect(page).toHaveURL(/\/fr\/kit-ordonnancement\/$/);
   await expect(page.locator('main')).toContainText('Bientôt disponible');
   // Ni prix, ni formulaire, ni champ de saisie, ni lien externe.
@@ -205,7 +206,8 @@ test('simulation : partie, semaine par semaine, sauvegarde et reprise depuis un 
   });
   page.on('dialog', (d) => void d.accept());
   await page.goto('/stock-o-metre/fr/');
-  await page.locator('nav a', { hasText: 'Simulation' }).click();
+  await page.getByRole('button', { name: 'Apprendre' }).click();
+  await page.locator('header nav a', { hasText: 'Simulation' }).click();
   await expect(page).toHaveURL(/\/fr\/simulation\/$/);
 
   // Paramétrage : entreprise, devise, profil.

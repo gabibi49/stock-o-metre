@@ -17,6 +17,8 @@ const fr = {
       exercises: 'Exercices',
       kit: 'Kit ordonnancement',
       simulation: 'Simulation',
+      learn: 'Apprendre',
+      menu: 'Menu',
     },
     langSwitch: {
       label: 'Langue :',
@@ -169,10 +171,25 @@ const fr = {
 
   tool: {
     promise:
-      'Chargez l’historique de vos mouvements de stock : l’outil calcule, article par article, le stock de sécurité, le point de commande et le stock cible, et classe vos articles en ABC-XYZ.',
+      'À partir d’un simple export de votre ERP, sachez pour chaque article quand recommander et combien garder en stock : stock de sécurité, point de commande, stock cible et classement ABC-XYZ, en quelques minutes.',
+    cta: {
+      example: 'Essayer avec un exemple',
+      upload: 'Charger mon fichier',
+      hint: '30 articles fictifs, résultats en quelques secondes. Gratuit, sans inscription.',
+    },
+    preview: {
+      caption: 'Aperçu : ce que l’outil vous indique pour chaque article',
+      item: 'Article',
+      status: 'Statut',
+      rop: 'Point de commande',
+      target: 'Stock cible',
+      stock: 'Stock actuel',
+    },
     privacyTitle: 'Vos données restent sur votre ordinateur',
     privacyText:
-      'Le fichier est lu et analysé dans votre navigateur. Il n’est jamais envoyé sur un serveur : pas d’envoi, pas de cookie, pas de traceur. Vous pouvez même couper votre connexion après le chargement de la page.',
+      'Le fichier est lu et analysé dans votre navigateur, jamais envoyé sur un serveur.',
+    privacyMore:
+      'Pas de cookie, pas de traceur. Vous pouvez même couper votre connexion après le chargement de la page.',
     steps: {
       label: 'Étapes',
       upload: 'Fichier',
@@ -295,9 +312,17 @@ const fr = {
       analyze: 'Lancer le calcul',
     },
     params: {
-      title: '3. Paramètres',
+      title: '3. Vérifiez les paramètres',
       intro:
-        'Valeurs par défaut pour tous les articles. Chaque paramètre est aussi modifiable article par article dans le tableau (bouton ⚙).',
+        'Valeurs appliquées à tous les articles : adaptez-les à votre activité, puis lancez le calcul. Ensuite, toute modification met les résultats à jour immédiatement. Chaque paramètre se règle aussi article par article (bouton ⚙ du tableau).',
+      leadHint: 'Temps moyen entre la commande et la réception.',
+      reviewHint: 'Fréquence à laquelle vous passez commande (7 = une fois par semaine).',
+      serviceHint:
+        'Probabilité de ne pas tomber en rupture entre deux réceptions. Plus elle est haute, plus le stock de sécurité grossit.',
+      fixMapping: 'Corrigez d’abord l’association des colonnes (étape 2).',
+      recap:
+        'Calcul fait avec : délai {lead} j, revue {review} j, taux de service A / B / C : {a} / {b} / {c} %, période : {period}.',
+      recapLink: 'Modifier les paramètres',
       period: 'Période d’agrégation',
       periods: { week: 'Semaine', month: 'Mois' },
       lead: 'Délai d’approvisionnement L (jours)',
@@ -356,7 +381,53 @@ const fr = {
         belowRop: 'Sous le point de commande',
         overstock: 'Surstock total',
         valueHint: '(valeur)',
-        understock: 'Sous-stock total',
+        understock: 'Manque pour atteindre le stock cible',
+      },
+      todo: {
+        title: 'À traiter',
+        order: { one: '1 article à commander', other: '{count} articles à commander' },
+        over: { one: '1 article en surstock', other: '{count} articles en surstock' },
+        check: {
+          one: '1 article aux données à vérifier',
+          other: '{count} articles aux données à vérifier',
+        },
+        all: 'Tout afficher',
+        none: 'Aucun article sous son point de commande ni en surstock.',
+        noStock:
+          'Stock actuel inconnu : ajoutez une colonne « stock actuel » à votre fichier (ou saisissez-le avec ⚙) pour savoir quoi commander.',
+        hint: 'Cliquez sur un compteur pour filtrer le tableau.',
+      },
+      status: {
+        order: 'À commander',
+        over: 'Surstock',
+        ok: 'OK',
+        unknown: 'Stock inconnu',
+      },
+      statusHelp: {
+        order: 'Stock actuel sous le point de commande : passez commande.',
+        over: 'Stock actuel au-dessus du stock cible : stock immobilisé en trop.',
+        ok: 'Stock actuel entre le point de commande et le stock cible.',
+        unknown: 'Stock actuel absent du fichier.',
+      },
+      filterStatus: 'Statut',
+      statusCheck: 'Données à vérifier',
+      showDetails: 'Afficher les colonnes statistiques',
+      legendTitle: 'Que signifient les colonnes ?',
+      help: {
+        status: 'Ce qu’il faut faire pour l’article : commander, réduire un surstock, ou rien.',
+        alerts:
+          'Points à vérifier dans vos données avant de vous fier au résultat (survolez le badge).',
+        abc: 'Poids de l’article dans la valeur consommée : A = les plus importants (80 % de la valeur).',
+        xyz: 'Régularité de la demande : X = régulière, Y = variable, Z = très irrégulière.',
+        mu: 'Consommation moyenne par période sur l’historique.',
+        sigma: 'Écart-type : amplitude des variations de consommation d’une période à l’autre.',
+        cv: 'Coefficient de variation = écart-type ÷ moyenne. Sert au classement XYZ.',
+        ss: 'Stock gardé en réserve pour absorber les aléas de demande et de délai.',
+        rop: 'Niveau de stock auquel il faut passer commande.',
+        target: 'Niveau à atteindre à chaque commande (stock + en commande).',
+        stock: 'Stock actuel, lu dans le fichier ou saisi avec ⚙.',
+        gap: 'Stock actuel − stock cible : positif = surstock, négatif = manque.',
+        coverage: 'Nombre de jours de consommation couverts par le stock actuel.',
       },
       abcValue: 'Classement ABC sur la valeur consommée (quantité × prix unitaire).',
       abcQty: 'Pas de prix unitaire : classement ABC sur la quantité consommée.',
@@ -366,14 +437,13 @@ const fr = {
       filterAbc: 'Classe ABC',
       filterXyz: 'Classe XYZ',
       all: 'Toutes',
-      alertsOnly: 'Avec alertes seulement',
       pageSize: 'Lignes par page',
       pageInfo: '{from}–{to} sur {total}',
       prev: 'Précédent',
       next: 'Suivant',
       noMatch: 'Aucun article ne correspond aux filtres.',
       caption:
-        'Résultats par article. Cliquez sur un en-tête pour trier, sur une ligne pour afficher ses graphiques.',
+        'Résultats par article. Cliquez sur un en-tête pour trier, sur une ligne pour afficher ses graphiques (sous le tableau).',
       sortBy: 'Trier par {col}',
       select: 'Afficher {item}',
       edit: 'Paramètres de l’article {item}',
@@ -393,6 +463,7 @@ const fr = {
         coverage: 'Couverture (jours)',
         alerts: 'Alertes',
         edit: 'Réglages',
+        status: 'Statut',
       },
       periodShort: { week: 'sem.', month: 'mois' },
       over: 'Surstock',
@@ -437,6 +508,7 @@ const fr = {
       loading: 'Chargement des graphiques…',
       selectPrompt: 'Sélectionnez un article dans le tableau pour afficher ses graphiques.',
       download: 'Télécharger l’image du graphique',
+      backToTable: '↑ Retour au tableau',
       summaryLabel: 'Résumé du graphique',
       stockTitle: 'Stock dans le temps : {item}',
       stock: 'Stock reconstitué',
@@ -759,6 +831,8 @@ const fr = {
         shortage: 'En cas de rupture',
         warehouse: 'Capacité de l’entrepôt (palettes)',
       },
+      warehouseHint:
+        'L’entrepôt est plus grand en Difficile, car des délais plus longs obligent à garder plus de stock. Rapporté au stock nécessaire, il reste pourtant le plus serré des trois profils.',
       eventModes: { announced: 'annoncés', partial: 'annoncés en partie', hidden: 'surprises' },
       shortageModes: { backorder: 'reliquats', lost: 'ventes perdues' },
       seed: 'Code de partie',
@@ -777,6 +851,7 @@ const fr = {
       result: 'Résultat logistique (cumul)',
       pilotValue: 'Pilote : {value}',
       startTitle: '1. Le point de départ',
+      notLaunched: 'Nouvel article : ventes à partir de {month}',
       firstMonth:
         'Vous reprenez le stock de l’entreprise avec un an d’historique de ventes. Les réglages proposés sont ceux du pilote automatique : à vous de les améliorer.',
       pastTitle: '1. Ce qui s’est passé en {month}',

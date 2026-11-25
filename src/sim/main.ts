@@ -460,6 +460,7 @@ function start(cfg: SimConfig, root: HTMLElement): void {
       radios,
       el('p', { class: 'field-hint' }, t.setup.profileHint),
       paramTable,
+      el('p', { class: 'field-hint' }, t.setup.warehouseHint),
       el('h3', {}, t.setup.seed),
       el(
         'div',
@@ -659,6 +660,13 @@ function start(cfg: SimConfig, root: HTMLElement): void {
             { class: 'field-hint sim-block' },
             t.families[def.family as keyof T['families']],
           ),
+          def.launchMonth !== undefined && g.month < def.launchMonth
+            ? el(
+                'span',
+                { class: 'level-badge sim-block' },
+                fill(t.game.notLaunched, { month: monthLabel(def.launchMonth, false) }),
+              )
+            : null,
         ),
         el(
           'td',

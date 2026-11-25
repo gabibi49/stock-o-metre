@@ -15,43 +15,79 @@ const switchHref = switchOverride ?? pathTo(routeKey ?? 'home', other);
 
 const section = (keys: string[]): boolean =>
   routeKey !== undefined && keys.some((k) => routeKey.startsWith(k));
-const nav = [
+const main = [
   { href: pathTo('home', lang), label: t.common.nav.tool, current: routeKey === 'home' },
-  { href: pathTo('guides', lang), label: t.common.nav.guides, current: section(['guide']) },
   {
     href: pathTo('calculators', lang),
     label: t.common.nav.calculators,
     current: section(['calc']),
   },
+];
+// Rubriques pour apprendre, regroupées sous « Apprendre ». Le kit ordonnancement,
+// pas encore disponible, n'est plus dans le menu : il reste dans le pied de page.
+const learn = [
+  { href: pathTo('guides', lang), label: t.common.nav.guides, current: section(['guide']) },
   {
     href: pathTo('exercises', lang),
     label: t.common.nav.exercises,
-    current: routeKey === 'exercises',
+    current: section(['exercise']),
   },
-  { href: pathTo('kit', lang), label: t.common.nav.kit, current: routeKey === 'kit' },
   {
     href: pathTo('simulation', lang),
     label: t.common.nav.simulation,
     current: routeKey === 'simulation',
   },
 ];
+const learnCurrent = learn.some((l) => l.current);
 ---
 
-<header class="site-header">
+<header class="site-header" data-nav>
   <div class="container header-inner">
     <a class="brand" href={pathTo('home', lang)}>
       <Logo />
       <span>{t.common.siteName}</span>
     </a>
-    <nav aria-label={t.common.nav.label}>
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      data-nav-toggle
+      hidden
+    >
+      <span aria-hidden="true" class="nav-toggle-icon"></span>
+      {t.common.nav.menu}
+    </button>
+    <nav id="site-nav" aria-label={t.common.nav.label}>
       <ul class="nav-list">
-        {nav.map((n) => (
+        {main.map((n) => (
           <li>
             <a href={n.href} aria-current={n.current ? 'page' : undefined}>
               {n.label}
             </a>
           </li>
         ))}
+        <li class="nav-group">
+          <button
+            type="button"
+            class:list={['nav-group-btn', { 'is-current': learnCurrent }]}
+            aria-expanded="false"
+            aria-controls="nav-learn"
+            data-nav-group
+            hidden
+          >
+            {t.common.nav.learn}
+          </button>
+          <ul class="nav-sub" id="nav-learn">
+            {learn.map((n) => (
+              <li>
+                <a href={n.href} aria-current={n.current ? 'page' : undefined}>
+                  {n.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </li>
       </ul>
     </nav>
     <a class="lang-switch" href={switchHref} hreflang={other} title={t.common.langSwitch.hint}>
@@ -63,3 +99,33 @@ const nav = [
     </a>
   </div>
 </header>
+
+<script>
+  // Amélioration progressive : sans JavaScript, toutes les rubriques restent affichées à plat.
+  const header = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = header?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const group = header?.querySelector<HTMLButtonElement>('[data-nav-group]');
+  if (header && toggle && group) {
+    header.dataset['enhanced'] = 'true';
+    toggle.hidden = false;
+    group.hidden = false;
+    const setOpen = (btn: HTMLButtonElement, open: boolean) =>
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    const isOpen = (btn: HTMLButtonElement) => btn.getAttribute('aria-expanded') === 'true';
+    toggle.addEventListener('click', () => setOpen(toggle, !isOpen(toggle)));
+    group.addEventListener('click', () => setOpen(group, !isOpen(group)));
+    document.addEventListener('click', (e) => {
+      if (!group.parentElement?.contains(e.target as Node)) setOpen(group, false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (isOpen(group)) {
+        setOpen(group, false);
+        group.focus();
+      } else if (isOpen(toggle)) {
+        setOpen(toggle, false);
+        toggle.focus();
+      }
+    });
+  }
+</script>
